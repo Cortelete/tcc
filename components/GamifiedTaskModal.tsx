@@ -54,6 +54,10 @@ const GamifiedTaskModal: React.FC<GamifiedTaskModalProps> = ({ isOpen, onClose, 
   const handlePlayerClick = (index: number) => {
     if (status !== 'playing') return;
 
+    // Flash the clicked button for visual feedback
+    setActiveButton(index);
+    setTimeout(() => setActiveButton(null), 300);
+
     const newPlayerSequence = [...playerSequence, index];
     setPlayerSequence(newPlayerSequence);
 
