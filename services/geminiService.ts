@@ -181,3 +181,69 @@ export const getMotivationalPhrase = async (power: CharacterPower | null): Promi
         return "A jornada de mil léguas começa com um único passo. Você está no caminho certo!";
     }
 };
+
+export const getCheckInQuestion = async (): Promise<{ questionText: string, options: string[] }> => {
+    if (!API_KEY) {
+        return {
+            questionText: "Como você está se sentindo agora?",
+            options: ["Energizado", "Normal", "Um pouco cansado"]
+        };
+    }
+
+    const prompt = `Você é o Sync, um mascote de IA. Crie uma pergunta de check-in simples e rápida para entender o estado atual do usuário (humor, foco ou energia). A pergunta deve ser amigável. Forneça 3 ou 4 opções de resposta curtas. Retorne APENAS um objeto JSON com "questionText" e "options" (um array de strings).`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        questionText: { type: Type.STRING },
+                        options: {
+                            type: Type.ARRAY,
+                            items: { type: Type.STRING }
+                        }
+                    },
+                    required: ['questionText', 'options']
+                }
+            }
+        });
+        const jsonString = response.text.trim();
+        return JSON.parse(jsonString);
+    } catch (error) {
+        console.error("Error fetching check-in question from Gemini API:", error);
+        return {
+            questionText: "Como você está se sentindo agora?",
+            options: ["Bem", "Ok", "Cansado"]
+        };
+    }
+};
+
+
+export const analyzeCheckInResponse = async (question: string, answer: string, user: User): Promise<string> => {
+     if (!API_KEY) return "Obrigado por compartilhar! Continue com o ótimo trabalho.";
+
+    const prompt = `Você é o Sync, um mascote de IA amigável de um app para neurodivergentes.
+    O Herói ${user.name} respondeu uma pergunta de check-in.
+    - Pergunta: "${question}"
+    - Resposta: "${answer}"
+    - Foco do Herói: Poder de ${user.characterPower || 'geral'}.
+    - Desafios do Herói: "${user.anamnesis?.challenges || 'Não informado'}"
+
+    Com base na resposta, gere uma mensagem curta (máximo 25 palavras), empática e encorajadora. Se a resposta for negativa (ex: cansado, sem foco), ofereça uma dica rápida e prática. Fale diretamente com o usuário.
+    Retorne apenas a mensagem.`;
+    
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+        });
+        return response.text.trim();
+    } catch (error) {
+        console.error("Error analyzing check-in response from Gemini API:", error);
+        return "Entendido! Agradeço por me contar. Lembre-se de fazer uma pausa se precisar.";
+    }
+};

@@ -1,233 +1,198 @@
-import React, { useState, useMemo, useEffect } from 'react';
+
+import React, { useState, useCallback, useEffect } from 'react';
 import useLocalStorage from './hooks/useLocalStorage';
-import { User, AdherenceStatus, TaskLog, Task, AiSuggestedTask, TaskCriticality, CharacterPower, ReminderType, PatientCondition } from './types';
-import { ICONS, ACHIEVEMENTS } from './constants';
-import Dashboard from './components/Dashboard';
+import { User, AdherenceStatus, Task, AiSuggestedTask, TaskCriticality } from './types';
+import { ACHIEVEMENTS, ICONS } from './constants';
 import Login from './components/Login';
-import AddTaskModal from './components/AddTaskModal';
+import OnboardingModal from './components/OnboardingModal';
+import Dashboard from './components/Dashboard';
 import ProfilePage from './components/ProfilePage';
 import Navigation from './components/Navigation';
-import OnboardingModal from './components/OnboardingModal';
+import AddTaskModal from './components/AddTaskModal';
 import Mascot from './components/Mascot';
-
 
 const App: React.FC = () => {
     const [users, setUsers] = useLocalStorage<User[]>('neurosync-users', []);
-    const [currentUser, setCurrentUser] = useState<User | null>(null);
-    const [isRegistering, setIsRegistering] = useState(false);
+    const [currentUser, setCurrentUser] = useLocalStorage<User | null>('neurosync-currentUser', null);
+    const [view, setView] = useState<'login' | 'register'>('login');
+    const [activeAppView, setActiveAppView] = useState<'dashboard' | 'profile'>('dashboard');
     const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
-    const [activeView, setActiveView] = useState<'dashboard' | 'profile'>('dashboard');
     const [mascotMessage, setMascotMessage] = useState<string | null>(null);
-    
+
     useEffect(() => {
-        // This is a simple auto-login mechanism for demonstration.
-        // In a real app, you'd use session tokens.
-        const lastUserId = localStorage.getItem('neurosync-lastUser');
-        if (lastUserId) {
-            const userToLogin = users.find(u => u.id === lastUserId);
-            if (userToLogin) {
-                setCurrentUser(userToLogin);
+        const testUserExists = users.some(u => u.username === 'teste');
+        if (!testUserExists) {
+            const testUser: User = {
+                id: 'user-teste',
+                username: 'teste',
+                password: 'teste',
+                fullName: 'Usuário de Teste',
+                name: 'Teste',
+                age: 25,
+                characterPower: 'focus',
+                tasks: [
+                     { id: 'task-1', name: 'Beber Água', description: 'Manter a hidratação', startTime: '08:00', frequencyHours: 2, criticality: TaskCriticality.LOW, reminderType: 'sensitive', taskType: 'generic' },
+                     { id: 'task-2', name: 'Meditar', description: '5 minutos de mindfulness', startTime: '07:30', frequencyHours: 24, criticality: TaskCriticality.MEDIUM, reminderType: 'alarm', taskType: 'generic' }
+                ],
+                defaultReminderType: 'alarm',
+                xp: 120,
+                level: 1,
+                achievements: ['welcome_hero', 'first_step'],
+                taskHistory: [],
+                mapProgress: 0,
+                onboardingComplete: true,
+            };
+            setUsers(prevUsers => [...prevUsers, testUser]);
+        }
+    }, []);
+
+
+    const updateUser = useCallback((updatedUser: User) => {
+        let newAchievementsFound = false;
+        ACHIEVEMENTS.forEach(ach => {
+            if (!updatedUser.achievements.includes(ach.id) && ach.condition(updatedUser)) {
+                updatedUser.achievements.push(ach.id);
+                if (!newAchievementsFound) {
+                    setMascotMessage(`Nova conquista: ${ach.name}!`);
+                    newAchievementsFound = true;
+                }
+            }
+        });
+
+        const newMapProgress = Math.floor(updatedUser.xp / 250);
+        if (newMapProgress > (updatedUser.mapProgress || 0)) {
+            updatedUser.mapProgress = newMapProgress;
+            if (!newAchievementsFound) { // Don't overwrite achievement message
+                 setMascotMessage(`Você avançou no Mapa da Jornada!`);
             }
         }
-    }, [users]);
-    
-    const userLevel = useMemo(() => currentUser ? Math.floor(currentUser.xp / 100) : 0, [currentUser]);
-    
-    const updateCurrentUser = (updatedUser: User) => {
+
         setCurrentUser(updatedUser);
         setUsers(prevUsers => prevUsers.map(u => u.id === updatedUser.id ? updatedUser : u));
-    };
+    }, [setCurrentUser, setUsers]);
 
-    const handleLogin = (username: string, password?: string) => {
-        const userToLogin = users.find(u => u.username.toLowerCase() === username.toLowerCase());
-        // Simple login for demo - no password check if not set
-        if (userToLogin && (!userToLogin.password || userToLogin.password === password)) {
-            setCurrentUser(userToLogin);
-            localStorage.setItem('neurosync-lastUser', userToLogin.id);
+    const handleLogin = (username: string, password?: string): boolean => {
+        const user = users.find(u => u.username.toLowerCase() === username.toLowerCase() && u.password === (password || ''));
+        if (user) {
+            setCurrentUser(user);
             return true;
         }
         return false;
     };
-
+    
     const handleLogout = () => {
         setCurrentUser(null);
-        localStorage.removeItem('neurosync-lastUser');
+        setView('login');
     };
 
-    const awardXpAndAchievements = (currentUser: User, xp: number): User => {
-        const updatedUser = { ...currentUser };
-        
-        const oldLevel = Math.floor(updatedUser.xp / 100);
-        updatedUser.xp += xp;
-        const newLevel = Math.floor(updatedUser.xp / 100);
-
-        updatedUser.level = newLevel;
-
-        if (newLevel > oldLevel && newLevel % 2 === 0) {
-            updatedUser.mapProgress = (updatedUser.mapProgress || 0) + 1;
-        }
-
-        ACHIEVEMENTS.forEach(achievement => {
-            if (!updatedUser.achievements.includes(achievement.id) && achievement.condition(updatedUser)) {
-                updatedUser.achievements.push(achievement.id);
-            }
-        });
-
-        return updatedUser;
+    const handleRegister = (newUserData: Omit<User, 'id'>) => {
+        const newUser: User = {
+            ...newUserData,
+            id: `user-${new Date().getTime()}`,
+            xp: 50,
+            achievements: ['welcome_hero']
+        };
+        setUsers(prev => [...prev, newUser]);
+        setCurrentUser(newUser);
     };
 
     const handleLogTask = (taskId: string, scheduledTime: Date, status: AdherenceStatus) => {
         if (!currentUser) return;
-        
-        const newUser = JSON.parse(JSON.stringify(currentUser));
-        
-        const newLog: TaskLog = {
-            taskId,
-            scheduledTime,
-            status,
-            actionTime: new Date()
-        };
-
-        const existingLogIndex = newUser.taskHistory.findIndex((log: TaskLog) => 
-            log.taskId === taskId && new Date(log.scheduledTime).getTime() === scheduledTime.getTime()
-        );
-
-        if (existingLogIndex !== -1) {
-            newUser.taskHistory[existingLogIndex] = newLog;
-        } else {
-            newUser.taskHistory.push(newLog);
+        const newLog = { taskId, scheduledTime, status, actionTime: new Date() };
+        let updatedUser = { ...currentUser, taskHistory: [...currentUser.taskHistory, newLog] };
+        if (status === AdherenceStatus.TAKEN) {
+            updatedUser.xp += 10;
         }
-        
-        newUser.taskHistory.sort((a: TaskLog, b: TaskLog) => new Date(b.scheduledTime).getTime() - new Date(a.scheduledTime).getTime());
-        
-        const xpToAward = currentUser.tasks.find(t => t.id === taskId)?.isMission ? 15 : 10;
-        const updatedUser = awardXpAndAchievements(newUser, xpToAward);
-        updateCurrentUser(updatedUser);
+        updateUser(updatedUser);
     };
-    
-    const handleAddTask = (taskData: Omit<Task, 'id'>) => {
+
+    const handleAddTask = (task: Omit<Task, 'id'>) => {
         if (!currentUser) return;
-        
-        const newTask: Task = {
-            ...taskData,
-            id: `task-${new Date().getTime()}`
-        };
-        const updatedUser = {
-            ...currentUser,
-            tasks: [...currentUser.tasks, newTask]
-        };
-        updateCurrentUser(updatedUser);
+        const newTask: Task = { ...task, id: `task-${new Date().getTime()}` };
+        const updatedUser = { ...currentUser, tasks: [...currentUser.tasks, newTask] };
+        updateUser(updatedUser);
         setIsAddTaskModalOpen(false);
     };
-
-    const handleAcceptMission = (mission: Omit<Task, 'id' | 'criticality' | 'frequencyHours' | 'startTime' | 'taskType' | 'dosage' | 'instructions'>) => {
+    
+    const handleAcceptMission = (mission: AiSuggestedTask) => {
         if (!currentUser) return;
-
-        const today = new Date().toISOString().split('T')[0];
-        let acceptances = currentUser.dailyMissionAcceptances || { date: today, count: 0 };
-
-        if (acceptances.date !== today) {
-            acceptances = { date: today, count: 0 };
-        }
-
-        if (acceptances.count >= 5) {
-            setMascotMessage("Limite de missões diárias atingido.");
-            return;
-        }
-
-        const now = new Date();
-        const startTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-
-        const taskData: Omit<Task, 'id'> = {
-            ...mission,
-            startTime,
+        const newMission: Task = {
+            id: `mission-${new Date().getTime()}`,
+            name: mission.name,
+            description: mission.description,
             frequencyHours: 24,
+            startTime: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit'}),
             criticality: TaskCriticality.MEDIUM,
+            reminderType: mission.reminderType,
             taskType: 'generic',
             isMission: true,
         };
         
-        const newTask: Task = {
-            ...taskData,
-            id: `mission-${new Date().getTime()}`
-        };
+        const today = new Date().toISOString().split('T')[0];
+        let acceptances = currentUser.dailyMissionAcceptances;
 
-        const updatedUser = {
-            ...currentUser,
-            tasks: [...currentUser.tasks, newTask],
-            dailyMissionAcceptances: { ...acceptances, count: acceptances.count + 1 },
-        };
-        updateCurrentUser(updatedUser);
-    }
-    
-    const handleCompleteOnboarding = (data: Omit<User, 'id'>) => {
-        let newUser: User = {
-            ...data,
-            id: `user-${new Date().getTime()}`,
-        };
-
-        if (!newUser.achievements.includes('welcome_hero')) {
-            newUser.achievements.push('welcome_hero');
+        if (acceptances?.date === today) {
+            acceptances.count += 1;
+        } else {
+            acceptances = { date: today, count: 1 };
         }
-        newUser = awardXpAndAchievements(newUser, 50);
-        
-        setUsers(prev => [...prev, newUser]);
-        setCurrentUser(newUser);
-        setIsRegistering(false);
-        localStorage.setItem('neurosync-lastUser', newUser.id);
+
+        const updatedUser = { 
+            ...currentUser, 
+            tasks: [...currentUser.tasks, newMission],
+            dailyMissionAcceptances: acceptances
+        };
+        updateUser(updatedUser);
     };
 
-    const renderContent = () => {
-        if (!currentUser) {
-            if (isRegistering) {
-                return <OnboardingModal onComplete={handleCompleteOnboarding} onBackToLogin={() => setIsRegistering(false)} />;
-            }
-            return <Login onLogin={handleLogin} onSwitchToRegister={() => setIsRegistering(true)} />;
+    if (!currentUser) {
+        if (view === 'register') {
+            return <OnboardingModal onComplete={handleRegister} onBackToLogin={() => setView('login')} />;
         }
-    
-        if (!currentUser.onboardingComplete) {
-            // This case handles users who registered but didn't finish.
-            // For this implementation, registration is one step.
-            // We could expand this to a multi-step process later.
-             return <OnboardingModal onComplete={handleCompleteOnboarding} onBackToLogin={() => setIsRegistering(false)} />;
-        }
-        
-        return (
-            <>
-                <header className="sticky top-0 z-20 glass-card border-b-0 rounded-none">
-                    <div className="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
-                        <img src="/logo.png" alt="NeuroSync Logo" className="h-10"/>
-                        <div className="flex items-center gap-4">
-                            <div className="text-sm font-semibold glass-card px-3 py-1 rounded-full border-0">
-                                Nível {userLevel}
-                            </div>
-                             <button onClick={handleLogout} className="text-white/80 hover:text-rose-400" aria-label="Sair">
-                                {ICONS.logout}
-                            </button>
-                        </div>
+        return <Login onLogin={handleLogin} onSwitchToRegister={() => setView('register')} />;
+    }
+
+    return (
+        <div className="bg-slate-900 text-white min-h-screen font-sans">
+            <div className="max-w-4xl mx-auto">
+                <header className="p-4 flex justify-between items-center md:pt-6 md:px-6">
+                    <div>
+                        <h1 className="text-xl font-bold">Olá, {currentUser.name}!</h1>
+                        <p className="text-sm text-white/60">Pronto para sua jornada de hoje?</p>
                     </div>
+                     <button onClick={handleLogout} className="text-white/60 hover:text-white transition-colors p-2 rounded-full bg-black/20" aria-label="Sair">
+                        {ICONS.logout}
+                    </button>
                 </header>
-                <main className="max-w-4xl mx-auto relative">
-                    {activeView === 'dashboard' && <Dashboard user={currentUser} onLogTask={handleLogTask} onAcceptMission={handleAcceptMission} setMascotMessage={setMascotMessage} />}
-                    {activeView === 'profile' && <ProfilePage user={currentUser} />}
+
+                <main>
+                    {activeAppView === 'dashboard' ? (
+                        <Dashboard
+                            user={currentUser}
+                            onLogTask={handleLogTask}
+                            onAcceptMission={handleAcceptMission}
+                            setMascotMessage={setMascotMessage}
+                        />
+                    ) : (
+                        <ProfilePage user={currentUser} />
+                    )}
                 </main>
-                <Mascot systemMessage={mascotMessage} user={currentUser} />
-                <Navigation activeView={activeView} setActiveView={setActiveView} onAddTaskClick={() => setIsAddTaskModalOpen(true)} />
-                <AddTaskModal 
+                
+                <Mascot user={currentUser} systemMessage={mascotMessage} />
+
+                <Navigation
+                    activeView={activeAppView}
+                    setActiveView={setActiveAppView}
+                    onAddTaskClick={() => setIsAddTaskModalOpen(true)}
+                />
+
+                <AddTaskModal
                     isOpen={isAddTaskModalOpen}
                     onClose={() => setIsAddTaskModalOpen(false)}
                     onAddTask={handleAddTask}
                     defaultReminderType={currentUser.defaultReminderType}
                 />
-            </>
-        );
-    };
-    
-    const mainClasses = `main-background font-sans text-white min-h-screen ${currentUser && currentUser.onboardingComplete ? 'pb-28' : ''}`;
-
-    return (
-        <div className={mainClasses}>
-           {renderContent()}
+            </div>
         </div>
     );
 };
