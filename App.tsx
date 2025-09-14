@@ -161,43 +161,53 @@ const App: React.FC = () => {
         setOnboardingComplete(true);
     };
 
-    if (!isLoggedIn) {
-        return <Login onLogin={handleLogin} />;
-    }
+    const renderContent = () => {
+        if (!isLoggedIn) {
+            return <Login onLogin={handleLogin} />;
+        }
     
-    if (!onboardingComplete) {
-        return <OnboardingModal user={user} onComplete={handleCompleteOnboarding} />
-    }
-    
-    return (
-        <div className="main-background font-sans text-white pb-28 min-h-screen">
-            <header className="sticky top-0 z-20 glass-card border-b-0 rounded-none">
-                <div className="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                        <span className="text-violet-400">{ICONS.brain}</span>
-                        <h1 className="text-xl font-bold text-white">NeuroSync AI</h1>
-                    </div>
-                    <div className="flex items-center gap-4">
-                        <div className="text-sm font-semibold glass-card px-3 py-1 rounded-full border-0">
-                            Nível {userLevel}
+        if (!onboardingComplete) {
+            return <OnboardingModal user={user} onComplete={handleCompleteOnboarding} />
+        }
+        
+        return (
+            <>
+                <header className="sticky top-0 z-20 glass-card border-b-0 rounded-none">
+                    <div className="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
+                        <div className="flex items-center gap-2">
+                            <span className="text-violet-400">{ICONS.brain}</span>
+                            <h1 className="text-xl font-bold text-white">NeuroSync AI</h1>
                         </div>
-                         <button onClick={handleLogout} className="text-white/80 hover:text-rose-400" aria-label="Sair">
-                            {ICONS.logout}
-                        </button>
+                        <div className="flex items-center gap-4">
+                            <div className="text-sm font-semibold glass-card px-3 py-1 rounded-full border-0">
+                                Nível {userLevel}
+                            </div>
+                             <button onClick={handleLogout} className="text-white/80 hover:text-rose-400" aria-label="Sair">
+                                {ICONS.logout}
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </header>
-            <main className="max-w-4xl mx-auto relative">
-                {activeView === 'dashboard' && <Dashboard user={user} onLogTask={handleLogTask} onAcceptMission={handleAcceptMission} />}
-                {activeView === 'profile' && <ProfilePage user={user} />}
-            </main>
-            <Navigation activeView={activeView} setActiveView={setActiveView} onAddTaskClick={() => setIsAddTaskModalOpen(true)} />
-            <AddTaskModal 
-                isOpen={isAddTaskModalOpen}
-                onClose={() => setIsAddTaskModalOpen(false)}
-                onAddTask={handleAddTask}
-                defaultReminderType={user.defaultReminderType}
-            />
+                </header>
+                <main className="max-w-4xl mx-auto relative">
+                    {activeView === 'dashboard' && <Dashboard user={user} onLogTask={handleLogTask} onAcceptMission={handleAcceptMission} />}
+                    {activeView === 'profile' && <ProfilePage user={user} />}
+                </main>
+                <Navigation activeView={activeView} setActiveView={setActiveView} onAddTaskClick={() => setIsAddTaskModalOpen(true)} />
+                <AddTaskModal 
+                    isOpen={isAddTaskModalOpen}
+                    onClose={() => setIsAddTaskModalOpen(false)}
+                    onAddTask={handleAddTask}
+                    defaultReminderType={user.defaultReminderType}
+                />
+            </>
+        );
+    };
+    
+    const mainClasses = `main-background font-sans text-white min-h-screen ${isLoggedIn && onboardingComplete ? 'pb-28' : ''}`;
+
+    return (
+        <div className={mainClasses}>
+           {renderContent()}
         </div>
     );
 };
