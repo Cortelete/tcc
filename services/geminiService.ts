@@ -136,3 +136,119 @@ export async function getSuggestedTasks(power: CharacterPower): Promise<AiSugges
         return [];
     }
 }
+
+// FIX: Implement and export missing Gemini service functions for Mascot component.
+/**
+ * Generates a short motivational phrase for the user.
+ */
+export async function getMotivationalPhrase(user: User): Promise<string> {
+    const prompt = `
+        Crie uma frase motivacional curta e encorajadora para ${user.name}.
+        O objetivo principal de ${user.name} é "${user.anamnesis?.mainGoal}".
+        Seus desafios são: "${user.anamnesis?.challenges}".
+        Seu poder principal é: ${user.characterPower}.
+        A frase deve ser positiva, inspiradora e falar diretamente com ${user.name}. 
+        Mantenha a frase com no máximo 20 palavras.
+        Não inclua saudações como "Olá".
+    `;
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+        });
+        return response.text.trim();
+    } catch (error) {
+        console.error("Error getting motivational phrase from Gemini:", error);
+        return "Lembre-se do seu objetivo. Você é mais forte do que pensa!";
+    }
+}
+
+/**
+ * Generates a "thinking" phrase for the mascot. This is a non-API call for speed.
+ */
+export async function getThinkingPhrase(userName: string): Promise<string> {
+    const phrases = [
+        `Deixa eu ver, ${userName}...`,
+        "Um momento, buscando algo especial para você...",
+        `Hmm, o que temos aqui para o herói ${userName}?`,
+        "Sincronizando pensamentos...",
+        "Consultando os oráculos da produtividade...",
+    ];
+    return phrases[Math.floor(Math.random() * phrases.length)];
+}
+
+
+/**
+ * Generates a check-in question for the user with multiple-choice options.
+ */
+export async function getCheckInQuestion(user: User): Promise<{ questionText: string; options: string[] }> {
+    const prompt = `
+        Crie uma pergunta de check-in rápida e gentil para o usuário ${user.name}, focando em seu bem-estar geral ou progresso em relação aos seus desafios ("${user.anamnesis?.challenges}").
+        A pergunta deve ser de múltipla escolha. Forneça a pergunta e 3 ou 4 opções de resposta concisas.
+        As opções devem cobrir uma gama de sentimentos (positivo, neutro, negativo).
+        Exemplo de pergunta: "Como você está se sentindo hoje em relação à sua concentração?"
+        Exemplo de opções: ["Muito focado!", "Normal, com altos e baixos.", "Um pouco disperso hoje."]
+    `;
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.OBJECT,
+                    properties: {
+                        questionText: {
+                            type: Type.STRING,
+                            description: "O texto da pergunta de check-in."
+                        },
+                        options: {
+                            type: Type.ARRAY,
+                            items: {
+                                type: Type.STRING
+                            },
+                            description: "Uma lista de 3 ou 4 opções de resposta."
+                        }
+                    },
+                    required: ["questionText", "options"]
+                }
+            }
+        });
+
+        const jsonText = response.text.trim();
+        return JSON.parse(jsonText);
+
+    } catch (error) {
+        console.error("Error getting check-in question from Gemini:", error);
+        return {
+            questionText: "Como você está se sentindo hoje?",
+            options: ["Estou bem!", "Mais ou menos.", "Preciso de um pouco de ajuda."]
+        };
+    }
+}
+
+/**
+ * Analyzes the user's response to a check-in question and provides feedback.
+ */
+export async function analyzeCheckInResponse(user: User, question: string, answer: string): Promise<string> {
+    const prompt = `
+        O usuário ${user.name} respondeu a uma pergunta de check-in.
+        Pergunta: "${question}"
+        Resposta: "${answer}"
+        Com base na resposta, forneça uma mensagem curta, empática e de apoio.
+        Se a resposta for positiva, comemore com ele.
+        Se a resposta for neutra, ofereça encorajamento.
+        Se a resposta for negativa, ofereça uma dica gentil ou uma palavra de conforto, relacionada aos seus desafios ("${user.anamnesis?.challenges}").
+        Mantenha a resposta com no máximo 30 palavras. Fale diretamente com o usuário.
+    `;
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+        });
+        return response.text.trim();
+    } catch (error) {
+        console.error("Error analyzing check-in response from Gemini:", error);
+        return "Obrigado por compartilhar. Cada passo é importante na sua jornada!";
+    }
+}
