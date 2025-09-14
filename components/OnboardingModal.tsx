@@ -3,15 +3,8 @@ import { ICONS, SUGGESTED_ONBOARDING_TASKS } from '../constants';
 import { User, CharacterPower, ReminderType, Task, TaskCriticality, PatientCondition } from '../types';
 
 interface OnboardingModalProps {
-  user: User;
-  onComplete: (data: {
-      name: string, 
-      power: CharacterPower, 
-      tasks: Omit<Task, 'id'>[], 
-      reminderType: ReminderType,
-      patientCondition?: PatientCondition,
-      hasMedicalReport?: boolean
-    }) => void;
+  onComplete: (data: Omit<User, 'id'>) => void;
+  onBackToLogin: () => void;
 }
 
 const PowerCard: React.FC<{icon: JSX.Element, title: string, description: string, isSelected: boolean, onClick: () => void}> = 
@@ -28,19 +21,26 @@ const PowerCard: React.FC<{icon: JSX.Element, title: string, description: string
 );
 
 
-const OnboardingModal: React.FC<OnboardingModalProps> = ({ user, onComplete }) => {
+const OnboardingModal: React.FC<OnboardingModalProps> = ({ onComplete, onBackToLogin }) => {
     const [step, setStep] = useState(1);
-    const [name, setName] = useState(user.name);
+    
+    // Step 1: Basic Info
+    const [fullName, setFullName] = useState('');
+    const [nickname, setNickname] = useState('');
+    const [username, setUsername] = useState('');
+    const [password, setPassword] = useState('');
+    const [age, setAge] = useState<number>(18);
+    
+    // Step 2: Anamnesis & Power
     const [power, setPower] = useState<CharacterPower | null>(null);
+    const [anamnesisChallenges, setAnamnesisChallenges] = useState('');
+    
+    // Step 3: Tasks
     const [tasks, setTasks] = useState<Omit<Task, 'id'>[]>([]);
     
-    // State for Step 2
-    const [medName, setMedName] = useState('');
-    const [medTime, setMedTime] = useState('08:00');
-    const [medDosage, setMedDosage] = useState('');
-    const [customTaskName, setCustomTaskName] = useState('');
-    
+    // Step 4: Final Touches
     const [reminderType, setReminderType] = useState<ReminderType>('alarm');
+    
     const [patientCondition, setPatientCondition] = useState<PatientCondition>('tdah');
     const [hasMedicalReport, setHasMedicalReport] = useState(false);
 
@@ -54,56 +54,52 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ user, onComplete }) =
             }
         });
     };
-
-    const handleAddMedication = (e: React.FormEvent) => {
-        e.preventDefault();
-        if(!medName.trim()) return;
-        const newMed: Omit<Task, 'id'> = {
-            name: medName,
-            description: `Medicamento: ${medDosage}`,
-            startTime: medTime,
-            frequencyHours: 24, // Default, can be changed later
-            criticality: TaskCriticality.HIGH,
-            reminderType: 'loud',
-            taskType: 'medication',
-            dosage: medDosage
-        };
-        setTasks(prev => [...prev, newMed]);
-        setMedName('');
-        setMedDosage('');
-        setMedTime('08:00');
-    };
-
-    const handleAddCustomTask = (e: React.FormEvent) => {
-        e.preventDefault();
-        if(!customTaskName.trim()) return;
-        const newTask: Omit<Task, 'id'> = {
-            name: customTaskName,
-            description: 'Tarefa inicial',
-            startTime: '09:00',
-            frequencyHours: 24,
-            criticality: TaskCriticality.MEDIUM,
-            reminderType: 'alarm',
-            taskType: 'generic'
-        };
-        setTasks(prev => [...prev, newTask]);
-        setCustomTaskName('');
-    };
-    
-    const handleRemoveTask = (indexToRemove: number) => {
-        setTasks(prev => prev.filter((_, index) => index !== indexToRemove));
-    };
     
     const renderStep = () => {
+        const inputStyle = "w-full glass-input px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-400";
+        const labelStyle = "block text-sm font-medium text-white/70 mb-1";
+        
         switch(step) {
             case 1:
                 return (
                     <div>
                         <h2 className="text-2xl font-bold text-center mb-2">Crie seu Herói da Rotina</h2>
                         <p className="text-center text-white/70 mb-6">Vamos começar personalizando sua jornada.</p>
-                        <div className="mb-6">
-                            <label htmlFor="hero-name" className="block text-sm font-medium text-white/70 mb-1">Nome do Herói</label>
-                            <input type="text" id="hero-name" value={name} onChange={e => setName(e.target.value)} className="w-full glass-input px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-400" />
+                        <div className="space-y-4">
+                             <div>
+                                <label htmlFor="username" className={labelStyle}>Nome de Usuário (para login)</label>
+                                <input type="text" id="username" value={username} onChange={e => setUsername(e.target.value)} className={inputStyle} required />
+                            </div>
+                            <div>
+                                <label htmlFor="password" className={labelStyle}>Senha (opcional)</label>
+                                <input type="password" id="password" value={password} onChange={e => setPassword(e.target.value)} className={inputStyle} />
+                            </div>
+                             <div>
+                                <label htmlFor="fullname" className={labelStyle}>Nome Completo</label>
+                                <input type="text" id="fullname" value={fullName} onChange={e => setFullName(e.target.value)} className={inputStyle} required />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label htmlFor="nickname" className={labelStyle}>Apelido</label>
+                                    <input type="text" id="nickname" value={nickname} onChange={e => setNickname(e.target.value)} className={inputStyle} required />
+                                </div>
+                                <div>
+                                    <label htmlFor="age" className={labelStyle}>Idade</label>
+                                    <input type="number" id="age" value={age} onChange={e => setAge(parseInt(e.target.value, 10))} className={inputStyle} required />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            case 2:
+                 return (
+                    <div>
+                        <h2 className="text-2xl font-bold text-center mb-2">Entendendo Seus Poderes</h2>
+                        <p className="text-center text-white/70 mb-6">Conte-nos um pouco sobre você para personalizarmos sua experiência.</p>
+                         <div className="mb-6">
+                            <label htmlFor="anamnesis" className={labelStyle}>Quais são seus maiores desafios diários?</label>
+                            <textarea id="anamnesis" value={anamnesisChallenges} onChange={e => setAnamnesisChallenges(e.target.value)} rows={3} className={inputStyle} placeholder="Ex: Dificuldade de concentração, esquecer de tomar remédios, gerenciar o tempo, etc."></textarea>
+                            <p className="text-xs text-white/50 mt-1">Esta informação será usada pela IA para te ajudar melhor.</p>
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-white/70 mb-2">Escolha seu Poder Principal</label>
@@ -114,7 +110,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ user, onComplete }) =
                                 <PowerCard icon={ICONS.power_patient} title="Paciente" description="Para suporte clínico personalizado." isSelected={power === 'patient'} onClick={() => setPower('patient')} />
                             </div>
                         </div>
-                        {power === 'patient' && (
+                         {power === 'patient' && (
                             <div className="mt-4 p-4 bg-black/20 rounded-lg space-y-4">
                                 <div>
                                     <label htmlFor="condition" className="block text-sm font-medium text-white/70 mb-1">Condição</label>
@@ -135,16 +131,11 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ user, onComplete }) =
                         )}
                     </div>
                 );
-            case 2:
+            case 3:
                  return (
                     <div>
                         <h2 className="text-2xl font-bold text-center mb-2">Mapeando a Jornada</h2>
                         <p className="text-center text-white/70 mb-4">Monte sua rotina inicial para começar a aventura.</p>
-                        <div className="bg-yellow-500/20 text-yellow-200 text-sm p-3 rounded-lg mb-4">
-                           <b>Atenção:</b> NeuroSync AI é uma ferramenta de suporte. Siga sempre a orientação de profissionais da saúde.
-                        </div>
-
-                        {/* Sugestões Rápidas */}
                         <div className="mb-4">
                             <h3 className="font-semibold text-white/80 mb-2">Sugestões Rápidas</h3>
                             <div className="grid grid-cols-2 gap-2">
@@ -158,46 +149,19 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ user, onComplete }) =
                                 })}
                             </div>
                         </div>
-
-                        {/* Adicionar Medicamento */}
-                        <div className="mb-4">
-                            <h3 className="font-semibold text-white/80 mb-2">Adicionar Medicamento</h3>
-                            <form onSubmit={handleAddMedication} className="p-3 bg-black/20 rounded-lg space-y-2">
-                                <input type="text" value={medName} onChange={e => setMedName(e.target.value)} placeholder="Nome do remédio" className="w-full text-sm glass-input px-3 py-2 rounded-md" required/>
-                                <div className="flex gap-2">
-                                    <input type="time" value={medTime} onChange={e => setMedTime(e.target.value)} className="w-1/2 text-sm glass-input px-3 py-2 rounded-md" required/>
-                                    <input type="text" value={medDosage} onChange={e => setMedDosage(e.target.value)} placeholder="Dosagem" className="w-1/2 text-sm glass-input px-3 py-2 rounded-md" />
-                                </div>
-                                <button type="submit" className="w-full bg-violet-600 text-white font-bold text-sm py-2 rounded-lg hover:bg-violet-700">Adicionar Remédio</button>
-                            </form>
-                        </div>
-                         {/* Adicionar Outra Tarefa */}
-                        <div className="mb-4">
-                             <h3 className="font-semibold text-white/80 mb-2">Adicionar Outra Tarefa</h3>
-                             <form onSubmit={handleAddCustomTask} className="flex gap-2">
-                                <input type="text" value={customTaskName} onChange={e => setCustomTaskName(e.target.value)} placeholder="Ex: Organizar a mesa" className="flex-grow text-sm glass-input px-3 py-2 rounded-lg" />
-                                <button type="submit" className="bg-violet-600 text-white font-bold p-2 rounded-lg hover:bg-violet-700">{ICONS.plus}</button>
-                            </form>
-                        </div>
-                        
-                        {/* Lista */}
                         <div>
                             <h3 className="font-semibold text-white/80 mb-2">Sua Lista Inicial ({tasks.length})</h3>
-                             <div className="space-y-2">
+                             <div className="space-y-2 max-h-48 overflow-y-auto">
                                 {tasks.length > 0 ? tasks.map((task, index) => (
                                     <div key={index} className="bg-black/20 p-2 rounded-lg flex justify-between items-center">
                                         <span className="text-sm">{task.taskType === 'medication' ? ICONS.pill : ''}{task.name}</span>
-                                        <button type="button" onClick={() => handleRemoveTask(index)} className="text-red-400 hover:text-red-300">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
-                                        </button>
                                     </div>
                                 )) : <p className="text-center text-sm text-white/60 p-3">Sua lista está vazia.</p>}
                             </div>
                         </div>
-
                     </div>
                 );
-            case 3:
+            case 4:
                 return (
                      <div>
                         <h2 className="text-2xl font-bold text-center mb-2">Configurando Alertas</h2>
@@ -209,7 +173,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ user, onComplete }) =
                         </div>
                     </div>
                 );
-            case 4:
+            case 5:
                 return (
                     <div className="text-center">
                         <h2 className="text-3xl font-bold mb-4">Missão Iniciada!</h2>
@@ -225,13 +189,11 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ user, onComplete }) =
     }
 
     const canProceed = () => {
-        if (step === 1) {
-            if (!name.trim() || !power) return false;
+        if (step === 1) return username.trim() && fullName.trim() && nickname.trim() && age > 0;
+        if (step === 2) {
+            if (!power) return false;
             if (power === 'patient' && !hasMedicalReport) return false;
             return true;
-        }
-        if (step === 2) {
-            return tasks.length > 0;
         }
         return true;
     }
@@ -240,13 +202,31 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ user, onComplete }) =
     const handleBack = () => setStep(s => s - 1);
     const handleComplete = () => {
         if(power) {
+            // Fix: The user's tasks array requires each task to have an 'id'.
+            // Map over the selected onboarding tasks and add a unique ID to each.
+            const tasksWithIds: Task[] = tasks.map((task, index) => ({
+                ...task,
+                id: `onboarding-task-${new Date().getTime()}-${index}`
+            }));
+
             onComplete({
-                name, 
-                power, 
-                tasks, 
-                reminderType, 
-                patientCondition: power === 'patient' ? patientCondition : undefined, 
-                hasMedicalReport: power === 'patient' ? hasMedicalReport : undefined
+                username: username.trim().toLowerCase(),
+                password: password,
+                fullName,
+                name: nickname,
+                age,
+                characterPower: power,
+                tasks: tasksWithIds,
+                defaultReminderType: reminderType,
+                patientCondition: power === 'patient' ? patientCondition : undefined,
+                hasMedicalReport: power === 'patient' ? hasMedicalReport : undefined,
+                anamnesis: { challenges: anamnesisChallenges, goals: '' },
+                xp: 0,
+                level: 0,
+                achievements: [],
+                taskHistory: [],
+                mapProgress: 0,
+                onboardingComplete: true,
             });
         }
     };
@@ -260,15 +240,15 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ user, onComplete }) =
                     </div>
                     <div className="p-6 pt-0 shrink-0">
                         <div className="flex gap-3 justify-between items-center">
-                            {step > 1 && step < 4 && <button onClick={handleBack} className="py-2 px-4 rounded-lg text-white/70 hover:text-white">Voltar</button>}
-                            {step === 1 && <div />}
-                            {step < 4 && <button onClick={handleNext} disabled={!canProceed()} className="flex-grow bg-violet-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-violet-700 disabled:bg-gray-500 disabled:cursor-not-allowed">Próximo</button>}
-                            {step === 4 && <button onClick={handleComplete} className="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700">Começar a Jornada!</button>}
+                            {step > 1 && step < 5 && <button onClick={handleBack} className="py-2 px-4 rounded-lg text-white/70 hover:text-white">Voltar</button>}
+                            {step === 1 && <button onClick={onBackToLogin} className="py-2 px-4 rounded-lg text-white/70 hover:text-white">Voltar ao Login</button>}
+                            {step < 5 && <button onClick={handleNext} disabled={!canProceed()} className="flex-grow bg-violet-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-violet-700 disabled:bg-gray-500 disabled:cursor-not-allowed">Próximo</button>}
+                            {step === 5 && <button onClick={handleComplete} className="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700">Começar a Jornada!</button>}
                         </div>
                     </div>
                  </div>
                  <div className="w-full h-2 bg-black/20 rounded-full mt-4 overflow-hidden">
-                    <div className="h-2 bg-violet-500 rounded-full transition-all duration-500" style={{width: `${(step/4)*100}%`}}></div>
+                    <div className="h-2 bg-violet-500 rounded-full transition-all duration-500" style={{width: `${(step/5)*100}%`}}></div>
                  </div>
             </div>
         </div>

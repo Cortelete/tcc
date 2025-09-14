@@ -1,48 +1,70 @@
 import React, { useState, useEffect } from 'react';
-import { ICONS } from '../constants';
+import { getMotivationalPhrase } from '../services/geminiService';
+import { User } from '../types';
 
 interface MascotProps {
-  message: string | null;
+  systemMessage: string | null;
+  user: User;
 }
 
-const Mascot: React.FC<MascotProps> = ({ message }) => {
-    const [showMessage, setShowMessage] = useState(false);
+const Mascot: React.FC<MascotProps> = ({ systemMessage, user }) => {
+    const [displayMessage, setDisplayMessage] = useState<string | null>(null);
     const [typedMessage, setTypedMessage] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
-    useEffect(() => {
-        if (message) {
-            setShowMessage(true);
-            setTypedMessage(""); // Reset
-            let i = 0;
-            const typingInterval = setInterval(() => {
+    const showAndTypeMessage = (message: string) => {
+        setDisplayMessage(message);
+        setTypedMessage("");
+        let i = 0;
+        const typingInterval = setInterval(() => {
+            if (i < message.length) {
                 setTypedMessage(prev => prev + message[i]);
                 i++;
-                if (i >= message.length) {
-                    clearInterval(typingInterval);
-                }
-            }, 30);
-
-            const hideTimeout = setTimeout(() => {
-                setShowMessage(false);
-            }, 8000); // Hide after 8 seconds
-
-            return () => {
+            } else {
                 clearInterval(typingInterval);
-                clearTimeout(hideTimeout);
-            };
+            }
+        }, 30);
+
+        const hideTimeout = setTimeout(() => {
+            setDisplayMessage(null);
+        }, 8000); // Hide after 8 seconds
+
+        return () => {
+            clearInterval(typingInterval);
+            clearTimeout(hideTimeout);
+        };
+    };
+
+    useEffect(() => {
+        if (systemMessage) {
+            const cleanup = showAndTypeMessage(systemMessage);
+            return cleanup;
         }
-    }, [message]);
+    }, [systemMessage]);
+    
+    const handleClick = async () => {
+        if (isLoading) return;
+        setIsLoading(true);
+        const phrase = await getMotivationalPhrase(user.characterPower);
+        setIsLoading(false);
+        showAndTypeMessage(phrase);
+    }
 
   return (
-    <div className="fixed bottom-24 right-4 z-40 w-64">
-      {showMessage && (
+    <div className="fixed bottom-24 right-4 z-40 w-64" aria-live="polite">
+      {displayMessage && (
         <div className="speech-bubble glass-card p-4 rounded-xl shadow-lg mb-4"
              style={{background: 'rgba(15, 23, 42, 0.8)'}}>
           <p className="text-white/90 text-sm">{typedMessage}</p>
         </div>
       )}
-      <div className="mascot-container w-24 h-24 ml-auto text-white">
-        {ICONS.mascot}
+      <div 
+        className="mascot-container w-24 h-24 ml-auto cursor-pointer"
+        onClick={handleClick}
+        role="button"
+        aria-label="Mascote Sync. Clique para uma dica."
+      >
+        <img src="/public/mascot.png" alt="Mascote Sync" className="w-full h-full object-contain"/>
       </div>
     </div>
   );

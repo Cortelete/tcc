@@ -94,7 +94,8 @@ const generateMissionsPrompt = (power: CharacterPower) => {
     const powerDescription = {
         focus: "Foco (para ajudar com concentração e produtividade, como em casos de TDAH)",
         memory: "Memória (para auxiliar na lembrança de tarefas e informações importantes)",
-        calm: "Calma (para gerenciar ansiedade e estresse com técnicas de relaxamento)"
+        calm: "Calma (para gerenciar ansiedade e estresse com técnicas de relaxamento)",
+        patient: "Paciente (com suporte clínico e rotinas estruturadas)"
     };
 
     return `
@@ -152,3 +153,31 @@ export const getSuggestedTasks = async (power: CharacterPower): Promise<AiSugges
         return [];
     }
 }
+
+export const getMotivationalPhrase = async (power: CharacterPower | null): Promise<string> => {
+    if (!API_KEY) return "Lembre-se de ser gentil com você mesmo hoje!";
+    if (!power) return "Cada passo, não importa o quão pequeno, é um progresso. Continue assim!";
+
+    const powerMap = {
+        focus: "Foco",
+        memory: "Memória",
+        calm: "Calma",
+        patient: "Paciência e Cuidado"
+    };
+
+    const prompt = `Você é o Sync, um mascote de IA de um aplicativo para neurodivergentes.
+    Crie uma frase curta (máximo 20 palavras), inteligente e motivacional para um usuário que está fortalecendo seu poder de "${powerMap[power]}".
+    A frase deve ser uma dica prática ou um insight encorajador em português do Brasil.
+    Retorne apenas a frase, sem aspas nem nada a mais.`;
+
+    try {
+        const response = await ai.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: prompt,
+        });
+        return response.text.trim();
+    } catch (error) {
+        console.error("Error fetching motivational phrase from Gemini API:", error);
+        return "A jornada de mil léguas começa com um único passo. Você está no caminho certo!";
+    }
+};

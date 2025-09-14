@@ -10,6 +10,7 @@ interface DashboardProps {
   user: User;
   onLogTask: (taskId: string, scheduledTime: Date, status: AdherenceStatus) => void;
   onAcceptMission: (mission: Omit<Task, 'id' | 'criticality' | 'frequencyHours' | 'startTime' | 'taskType' | 'dosage' | 'instructions' | 'category' | 'subcategory'>) => void;
+  setMascotMessage: (message: string | null) => void;
 }
 
 const getScheduleForToday = (task: Task): Date[] => {
@@ -40,13 +41,12 @@ const getScheduleForToday = (task: Task): Date[] => {
     return schedule.sort((a,b) => a.getTime() - b.getTime());
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ user, onLogTask, onAcceptMission }) => {
+const Dashboard: React.FC<DashboardProps> = ({ user, onLogTask, onAcceptMission, setMascotMessage }) => {
     const [aiInsight, setAiInsight] = useState<AiInsight | null>(null);
     const [suggestedMissions, setSuggestedMissions] = useState<AiSuggestedTask[]>([]);
     const [isLoadingMissions, setIsLoadingMissions] = useState(true);
     const [gamifiedTask, setGamifiedTask] = useState<{task: Task, time: Date} | null>(null);
     const [showXp, setShowXp] = useState(false);
-    const [mascotMessage, setMascotMessage] = useState<string | null>(null);
 
     const missionsAcceptedToday = useMemo(() => {
         const today = new Date().toISOString().split('T')[0];
@@ -60,7 +60,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogTask, onAcceptMission 
 
     const fetchInsightsAndMissions = useCallback(async () => {
         setIsLoadingMissions(true);
-        if(user.characterPower && user.characterPower !== 'patient') { // Patient power might have different logic later
+        if(user.characterPower) {
             const missions = await getSuggestedTasks(user.characterPower);
             setSuggestedMissions(missions);
             if(missions.length > 0) {
@@ -76,7 +76,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogTask, onAcceptMission 
         const insight = await getTaskInsights(user);
         setAiInsight(insight);
         
-    }, [user.characterPower, user.name]);
+    }, [user.characterPower, user.name, setMascotMessage]);
 
     useEffect(() => {
         fetchInsightsAndMissions();
@@ -140,8 +140,6 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogTask, onAcceptMission 
     return (
         <div className="p-4 space-y-4 md:p-6 md:space-y-6 relative pb-20">
             {showXp && <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-emerald-500/80 text-white font-bold py-2 px-4 rounded-full shadow-lg z-50 animate-bounce">+10 XP</div>}
-            
-            <Mascot message={mascotMessage} />
 
             {suggestedMissions.length > 0 && (
                 <div className="glass-card p-4 rounded-2xl">

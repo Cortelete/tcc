@@ -49,9 +49,17 @@ export interface Achievement {
     condition: (user: User) => boolean;
 }
 
+export interface Anamnesis {
+    challenges: string;
+    goals: string;
+}
+
 export interface User {
   id: string;
-  name: string;
+  username: string; // for login
+  password?: string; // for login
+  fullName: string;
+  name: string; // Nickname
   age: number;
   tasks: Task[];
   taskHistory: TaskLog[];
@@ -64,6 +72,10 @@ export interface User {
   dailyMissionAcceptances?: { date: string, count: number };
   defaultReminderType: ReminderType;
   mapProgress: number; // Number of nodes unlocked on the map
+  onboardingComplete: boolean;
+  anamnesis?: Anamnesis;
+  isMinor?: boolean;
+  guardianInfo?: { name: string; email: string };
 }
 
 export interface AiInsight {

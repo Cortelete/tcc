@@ -121,20 +121,4 @@ export const SUGGESTED_ONBOARDING_TASKS: Omit<Task, 'id'>[] = [
         reminderType: 'alarm',
         taskType: 'generic'
     },
-]
-
-
-export const INITIAL_USER_DATA: User = {
-  id: 'user-1',
-  name: 'Alex',
-  age: 28,
-  xp: 0,
-  level: 0,
-  achievements: [],
-  tasks: [],
-  taskHistory: [],
-  characterPower: null,
-  defaultReminderType: 'alarm',
-  mapProgress: 0,
-  dailyMissionAcceptances: { date: new Date().toISOString().split('T')[0], count: 0 },
-};
+];

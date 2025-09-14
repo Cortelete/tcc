@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="color-scheme" content="dark" />
     <title>NeuroSync AI</title>
+    <link rel="icon" href="/public/moeda.png">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       body {
@@ -119,6 +120,14 @@
       }
       ::-webkit-scrollbar-thumb:hover {
         background: rgba(100, 116, 139, 0.8);
+      }
+      /* Coin animation */
+      .coin {
+        transition: transform 1s cubic-bezier(0.5, 0, 0.5, 1);
+        transform-style: preserve-3d;
+      }
+      .coin.spinning {
+        transform: rotateY(1080deg);
       }
     </style>
     <script type="importmap">

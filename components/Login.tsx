@@ -1,31 +1,41 @@
 import React, { useState } from 'react';
-import { ICONS } from '../constants';
 
 interface LoginProps {
-  onLogin: () => void;
+  onLogin: (username: string, password?: string) => boolean;
+  onSwitchToRegister: () => void;
 }
 
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
+const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isSpinning, setIsSpinning] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (username === 'teste' && password === '1234') {
-      setError('');
-      onLogin();
-    } else {
+    const success = onLogin(username, password);
+    if (!success) {
       setError('Usuário ou senha inválidos.');
     }
   };
+  
+  const handleCoinClick = () => {
+    setIsSpinning(true);
+    setTimeout(() => setIsSpinning(false), 1000);
+  }
 
   return (
-    <div className="flex items-center justify-center h-full p-4">
+    <div className="flex items-center justify-center min-h-screen p-4">
       <div className="p-8 glass-card rounded-2xl shadow-2xl w-full max-w-sm border-0">
-        <div className="flex justify-center mb-6">
+        <div className="flex flex-col items-center justify-center mb-6">
+            <img 
+              src="/public/moeda.png" 
+              alt="Moeda da Sorte" 
+              className={`w-20 h-20 mb-4 cursor-pointer coin ${isSpinning ? 'spinning' : ''}`}
+              onClick={handleCoinClick}
+            />
             <div className="flex items-center gap-3">
-                <span className="text-violet-400">{ICONS.brain}</span>
+                <img src="/public/logo.png" alt="NeuroSync Logo" className="h-8 w-8"/>
                 <h1 className="text-2xl font-bold text-white">NeuroSync AI</h1>
             </div>
         </div>
@@ -41,12 +51,13 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="mt-1 block w-full px-4 py-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 glass-input"
-              placeholder="teste"
+              placeholder="Seu nome de usuário"
+              required
             />
           </div>
           <div>
             <label htmlFor="password"  className="block text-sm font-medium text-white/70 mb-1">
-              Senha
+              Senha (opcional)
             </label>
             <input
               type="password"
@@ -54,7 +65,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1 block w-full px-4 py-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 glass-input"
-              placeholder="1234"
+              placeholder="Sua senha"
             />
           </div>
           {error && <p className="text-red-400 text-sm text-center pt-2">{error}</p>}
@@ -65,6 +76,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
             Entrar
           </button>
         </form>
+         <div className="text-center mt-6">
+            <p className="text-sm text-white/70">
+                Não tem uma conta?{' '}
+                <button onClick={onSwitchToRegister} className="font-medium text-violet-400 hover:text-violet-300">
+                    Criar conta
+                </button>
+            </p>
+        </div>
       </div>
     </div>
   );
