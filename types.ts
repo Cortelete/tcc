@@ -1,90 +1,83 @@
-export enum TaskCriticality {
-  HIGH = 'Alta',
-  MEDIUM = 'Média',
-  LOW = 'Baixa',
-}
+import React from 'react';
 
 export enum AdherenceStatus {
-  TAKEN = 'TAKEN',
-  MISSED = 'MISSED',
-  PENDING = 'PENDING',
+  TAKEN = 'taken',
+  MISSED = 'missed',
+  PENDING = 'pending',
+}
+
+export enum TaskCriticality {
+  LOW = 'low',
+  MEDIUM = 'medium',
+  HIGH = 'high',
 }
 
 export type ReminderType = 'alarm' | 'sensitive' | 'loud' | 'call' | 'game' | 'whatsapp';
-
-export type CharacterPower = 'focus' | 'memory' | 'calm' | 'patient';
-export type PatientCondition = 'tdah' | 'tea' | 'superdotacao' | 'outro';
-
 export type TaskType = 'generic' | 'medication';
+export type CharacterPower = 'focus' | 'memory' | 'calm' | 'patient';
 
 export interface Task {
   id: string;
   name: string;
   description: string;
+  icon?: React.ReactNode;
+  startTime: string; // "HH:MM"
   frequencyHours: number;
-  startTime: string; // HH:mm format
   criticality: TaskCriticality;
   reminderType: ReminderType;
   taskType: TaskType;
+  dosage?: string;
+  instructions?: string;
+  category?: string;
+  subcategory?: string;
   isMission?: boolean;
-  dosage?: string; // e.g., "1 comprimido"
-  instructions?: string; // e.g., "Tomar com comida"
-  category?: string; // e.g., "Vitamina"
-  subcategory?: string; // e.g., "Vitamina D"
-  icon?: JSX.Element;
 }
 
 export interface TaskLog {
   taskId: string;
-  scheduledTime: Date;
-  actionTime?: Date;
+  scheduledTime: Date | string;
   status: AdherenceStatus;
+  actionTime?: Date | string;
 }
 
 export interface Achievement {
-    id: string;
-    name: string;
-    description: string;
-    icon: JSX.Element;
-    condition: (user: User) => boolean;
+  id: string;
+  name: string;
+  description: string;
+  icon: React.ReactNode;
+  condition: (user: User) => boolean;
 }
 
 export interface Anamnesis {
+    mainGoal: string;
     challenges: string;
-    goals: string;
 }
 
 export interface User {
   id: string;
-  username: string; // for login
-  password?: string; // for login
-  fullName: string;
-  name: string; // Nickname
-  age: number;
+  name: string;
+  age?: number;
+  characterPower: CharacterPower | null;
+  patientCondition?: string;
+  anamnesis: Anamnesis | null;
   tasks: Task[];
   taskHistory: TaskLog[];
   xp: number;
-  level: number;
-  achievements: string[]; // Array of achievement IDs
-  characterPower: CharacterPower | null;
-  patientCondition?: PatientCondition;
-  hasMedicalReport?: boolean;
-  dailyMissionAcceptances?: { date: string, count: number };
-  defaultReminderType: ReminderType;
-  mapProgress: number; // Number of nodes unlocked on the map
-  onboardingComplete: boolean;
-  anamnesis?: Anamnesis;
-  isMinor?: boolean;
-  guardianInfo?: { name: string; email: string };
+  achievements: string[];
+  mapProgress: number;
+  dailyMissionAcceptances?: {
+      date: string; // YYYY-MM-DD
+      count: number;
+  };
 }
 
 export interface AiInsight {
-    analysis: string;
-    recommendation: string;
+  analysis: string;
+  recommendation: string;
 }
 
 export interface AiSuggestedTask {
-    name: string;
-    description: string;
-    reminderType: ReminderType;
+  name: string;
+  description: string;
+  reminderType: ReminderType;
 }

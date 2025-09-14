@@ -25,7 +25,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen p-4">
+    <div className="main-background flex items-center justify-center min-h-screen p-4">
       <div className="p-8 glass-card rounded-2xl shadow-2xl w-full max-w-sm border-0">
         <div className="flex flex-col items-center justify-center mb-6">
             <img 

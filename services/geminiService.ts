@@ -1,199 +1,33 @@
+// FIX: Implement the geminiService to interact with the Google GenAI API.
 import { GoogleGenAI, Type } from "@google/genai";
-import { User, CharacterPower, AiSuggestedTask } from "../types";
+import { User, AiInsight, CharacterPower, AiSuggestedTask, ReminderType } from '../types';
 
-const API_KEY = process.env.API_KEY;
+// FIX: Initialize GoogleGenAI with a named apiKey parameter as per the coding guidelines.
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
-if (!API_KEY) {
-  console.warn("API_KEY for Gemini is not set. AI features will be disabled.");
-}
+/**
+ * Analyzes user task history to provide insights and recommendations.
+ */
+export async function getTaskInsights(user: User): Promise<AiInsight> {
+    const prompt = `
+        Analise o histórico de tarefas do seguinte usuário e forneça um insight e uma recomendação.
+        O usuário é ${user.name}, tem ${user.age} anos.
+        Seu poder principal é: ${user.characterPower}.
+        Sua condição é: ${user.patientCondition || 'Não informada'}.
+        Seus desafios diários são: "${user.anamnesis?.challenges}".
+        Aqui estão algumas de suas tarefas atuais: ${JSON.stringify(user.tasks.map(t => ({ name: t.name, criticality: t.criticality })))}.
+        Este é o histórico recente de conclusão (últimos 10 registros): ${JSON.stringify(user.taskHistory.slice(-10))}.
 
-const ai = new GoogleGenAI({ apiKey: API_KEY! });
-
-const generateInsightPrompt = (user: User) => {
-  const historySummary = user.taskHistory
-    .map(log => `- Tarefa: ${user.tasks.find(t => t.id === log.taskId)?.name}, Agendado: ${new Date(log.scheduledTime).toLocaleString('pt-BR')}, Status: ${log.status}`)
-    .join('\n');
-    
-  const medicationSummary = user.tasks
-    .filter(t => t.taskType === 'medication')
-    .map(t => `- Medicamento: ${t.name}, Dosagem: ${t.dosage || 'N/A'}, Instruções: ${t.instructions || 'N/A'}`)
-    .join('\n');
-
-  return `
-    Você é o Sync, um mascote de IA amigável e encorajador para o aplicativo de apoio a neurodivergentes, NeuroSync AI.
-    Sua personalidade é como a de um guia de videogame: positiva, motivacional e cheia de dicas.
-    Analise os dados do Herói ${user.name} e forneça insights de apoio em português do Brasil.
-    
-    Dados do Herói:
-    - Nome: ${user.name}
-    - Poder Escolhido: ${user.characterPower}
-    - Medicamentos Atuais: ${medicationSummary || "Nenhum registrado."}
-    
-    Histórico de Tarefas (últimos registros):
-    ${historySummary}
-    
-    Fale diretamente com o usuário ("Percebi que você...", "Que tal...").
-    A 'analysis' deve ser uma observação curta e empática.
-    A 'recommendation' deve ser uma sugestão prática e positiva, como uma dica de jogo.
-    Retorne em formato JSON.
-  `;
-};
-
-export const getTaskInsights = async (user: User): Promise<{ analysis: string; recommendation: string } | null> => {
-  if (!API_KEY) {
-    return {
-        analysis: "Olá, Herói! Minha análise está offline no momento.",
-        recommendation: "Peça para meu criador configurar a chave de API do Gemini para eu poder te ajudar melhor!"
-    };
-  }
-  
-  if (!user.taskHistory || user.taskHistory.length < 2) {
-      return {
-          analysis: `Olá, ${user.name}! Estou pronto para a aventura!`,
-          recommendation: "Continue registrando suas missões para que eu possa te dar dicas e truques secretos!"
-      }
-  }
-
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
-      contents: generateInsightPrompt(user),
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            analysis: {
-              type: Type.STRING,
-              description: 'Uma breve e solidária análise do padrão de tarefas do usuário em português.',
-            },
-            recommendation: {
-              type: Type.STRING,
-              description: 'Uma sugestão acionável e positiva para melhorar o engajamento em português.',
-            },
-          },
-          required: ['analysis', 'recommendation']
-        },
-      },
-    });
-
-    const jsonString = response.text.trim();
-    const result = JSON.parse(jsonString);
-    return result;
-
-  } catch (error) {
-    console.error("Error fetching insights from Gemini API:", error);
-    return {
-        analysis: "Ops! Minhas antenas estão com um pouco de interferência.",
-        recommendation: "Não consegui processar os dados agora. Vamos tentar de novo mais tarde!"
-    };
-  }
-};
-
-const generateMissionsPrompt = (power: CharacterPower) => {
-    const powerDescription = {
-        focus: "Foco (para ajudar com concentração e produtividade, como em casos de TDAH)",
-        memory: "Memória (para auxiliar na lembrança de tarefas e informações importantes)",
-        calm: "Calma (para gerenciar ansiedade e estresse com técnicas de relaxamento)",
-        patient: "Paciente (com suporte clínico e rotinas estruturadas)"
-    };
-
-    return `
-    Você é Sync, o mascote e mestre de missões do aplicativo NeuroSync AI.
-    Sua tarefa é criar 2 "missões" diárias, como em um RPG, para um Herói que escolheu o poder de "${powerDescription[power]}".
-    As missões devem ser pequenas, acionáveis, positivas e ter nomes criativos de fantasia/RPG.
-    
-    Exemplos para Foco: 
-    - Nome: "Ritual do Foco Arcano". Descrição: "Concentre seus poderes! Use um timer de 25 min para uma tarefa e depois descanse por 5 min para recarregar."
-    - Nome: "Limpeza do Santuário". Descrição: "Um ambiente limpo fortalece a mente. Organize sua mesa por 10 minutos para criar uma zona de poder."
-    
-    Exemplos para Memória:
-    - Nome: "Feitiço da Previsão". Descrição: "Olhe para o futuro! Revise seu grimório de tarefas de amanhã antes de dormir."
-    - Nome: "Coletar Orbes de Memória". Descrição: "Fortaleça sua mente! Tente lembrar 3 coisas boas (orbes) que aconteceram hoje."
-
-    Exemplos para Calma:
-    - Nome: "Sopro do Dragão Sereno". Descrição: "Controle sua energia. Inspire por 4s, segure por 7s, expire por 8s. Repita 3 vezes."
-    - Nome: "Poção Sonora da Paz". Descrição: "Restaure sua mana. Faça uma pausa de 5 minutos para ouvir uma música relaxante."
-
-    Retorne as missões em um formato JSON. O 'reminderType' deve ser 'game' ou 'alarm'. Seja criativo e mantenha o tom de um jogo.
+        Sua análise deve ser concisa, focando na aderência recente (ex: pontualidade, falhas).
+        Sua recomendação deve ser uma dica prática e motivadora para ajudar o usuário a melhorar ou a manter o bom trabalho.
+        Use uma linguagem encorajadora e positiva, falando diretamente com o usuário (ex: "Percebi que você...").
+        Seja breve e direto ao ponto.
     `;
-}
-
-
-export const getSuggestedTasks = async (power: CharacterPower): Promise<AiSuggestedTask[]> => {
-    if(!API_KEY) return [];
 
     try {
+        // FIX: Use ai.models.generateContent as per the coding guidelines.
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: generateMissionsPrompt(power),
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                    type: Type.ARRAY,
-                    items: {
-                        type: Type.OBJECT,
-                        properties: {
-                            name: { type: Type.STRING },
-                            description: { type: Type.STRING },
-                            reminderType: { type: Type.STRING }
-                        },
-                        required: ['name', 'description', 'reminderType']
-                    }
-                }
-            }
-        });
-
-        const jsonString = response.text.trim();
-        const result = JSON.parse(jsonString);
-        return result;
-
-    } catch (error) {
-        console.error("Error fetching suggested tasks from Gemini API:", error);
-        return [];
-    }
-}
-
-export const getMotivationalPhrase = async (power: CharacterPower | null): Promise<string> => {
-    if (!API_KEY) return "Lembre-se de ser gentil com você mesmo hoje!";
-    if (!power) return "Cada passo, não importa o quão pequeno, é um progresso. Continue assim!";
-
-    const powerMap = {
-        focus: "Foco",
-        memory: "Memória",
-        calm: "Calma",
-        patient: "Paciência e Cuidado"
-    };
-
-    const prompt = `Você é o Sync, um mascote de IA de um aplicativo para neurodivergentes.
-    Crie uma frase curta (máximo 20 palavras), inteligente e motivacional para um usuário que está fortalecendo seu poder de "${powerMap[power]}".
-    A frase deve ser uma dica prática ou um insight encorajador em português do Brasil.
-    Retorne apenas a frase, sem aspas nem nada a mais.`;
-
-    try {
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: prompt,
-        });
-        return response.text.trim();
-    } catch (error) {
-        console.error("Error fetching motivational phrase from Gemini API:", error);
-        return "A jornada de mil léguas começa com um único passo. Você está no caminho certo!";
-    }
-};
-
-export const getCheckInQuestion = async (): Promise<{ questionText: string, options: string[] }> => {
-    if (!API_KEY) {
-        return {
-            questionText: "Como você está se sentindo agora?",
-            options: ["Energizado", "Normal", "Um pouco cansado"]
-        };
-    }
-
-    const prompt = `Você é o Sync, um mascote de IA. Crie uma pergunta de check-in simples e rápida para entender o estado atual do usuário (humor, foco ou energia). A pergunta deve ser amigável. Forneça 3 ou 4 opções de resposta curtas. Retorne APENAS um objeto JSON com "questionText" e "options" (um array de strings).`;
-
-    try {
-        const response = await ai.models.generateContent({
+            // FIX: Use 'gemini-2.5-flash' model for general text tasks.
             model: "gemini-2.5-flash",
             contents: prompt,
             config: {
@@ -201,49 +35,104 @@ export const getCheckInQuestion = async (): Promise<{ questionText: string, opti
                 responseSchema: {
                     type: Type.OBJECT,
                     properties: {
-                        questionText: { type: Type.STRING },
-                        options: {
-                            type: Type.ARRAY,
-                            items: { type: Type.STRING }
+                        analysis: {
+                            type: Type.STRING,
+                            description: "Análise concisa da aderência do usuário."
+                        },
+                        recommendation: {
+                            type: Type.STRING,
+                            description: "Recomendação acionável e encorajadora."
                         }
                     },
-                    required: ['questionText', 'options']
+                    required: ["analysis", "recommendation"]
                 }
             }
         });
-        const jsonString = response.text.trim();
-        return JSON.parse(jsonString);
+        
+        // FIX: Access the text directly from the response object and parse it.
+        const jsonText = response.text.trim();
+        const result = JSON.parse(jsonText);
+        return result;
+
     } catch (error) {
-        console.error("Error fetching check-in question from Gemini API:", error);
+        console.error("Error getting task insights from Gemini:", error);
+        // Provide a fallback response on error
         return {
-            questionText: "Como você está se sentindo agora?",
-            options: ["Bem", "Ok", "Cansado"]
+            analysis: "Não foi possível carregar a análise da IA no momento.",
+            recommendation: "Continue focado em suas tarefas. Você está no caminho certo!"
         };
     }
-};
+}
 
+/**
+ * Suggests new daily tasks (missions) based on the user's selected power.
+ */
+export async function getSuggestedTasks(power: CharacterPower): Promise<AiSuggestedTask[]> {
+    const powerDescriptions: Record<CharacterPower, string> = {
+        focus: "foco e concentração",
+        memory: "memória e lembrança de informações",
+        calm: "calma, relaxamento e controle emocional",
+        patient: "gerenciamento de rotinas de saúde e bem-estar"
+    };
 
-export const analyzeCheckInResponse = async (question: string, answer: string, user: User): Promise<string> => {
-     if (!API_KEY) return "Obrigado por compartilhar! Continue com o ótimo trabalho.";
+    const prompt = `
+        Crie 3 sugestões de missões diárias curtas e envolventes para um usuário cujo poder principal é "${powerDescriptions[power]}".
+        As missões devem ser práticas, simples e diretamente relacionadas ao desenvolvimento desse poder.
+        
+        - O nome da tarefa deve ser curto, criativo e motivador.
+        - A descrição deve ser uma frase clara e concisa.
+        - O reminderType deve ser um dos seguintes valores: 'alarm', 'sensitive', 'loud', 'call', 'game', 'whatsapp'. Escolha um que se encaixe na natureza da tarefa.
 
-    const prompt = `Você é o Sync, um mascote de IA amigável de um app para neurodivergentes.
-    O Herói ${user.name} respondeu uma pergunta de check-in.
-    - Pergunta: "${question}"
-    - Resposta: "${answer}"
-    - Foco do Herói: Poder de ${user.characterPower || 'geral'}.
-    - Desafios do Herói: "${user.anamnesis?.challenges || 'Não informado'}"
+        Exemplos para 'foco': { name: "Foco de Monge", description: "Trabalhe por 25 minutos sem nenhuma distração.", reminderType: "game" }
+        Exemplos para 'memória': { name: "Diário de um Herói", description: "Anote 3 coisas que você aprendeu hoje.", reminderType: "sensitive" }
+        Exemplos para 'calma': { name: "Respiração do Dragão", description: "Faça 2 minutos de respiração profunda e lenta.", reminderType: "alarm" }
+        Exemplos para 'patient': { name: "Check-up do Herói", description: "Verifique se seus medicamentos para amanhã estão organizados.", reminderType: "sensitive" }
 
-    Com base na resposta, gere uma mensagem curta (máximo 25 palavras), empática e encorajadora. Se a resposta for negativa (ex: cansado, sem foco), ofereça uma dica rápida e prática. Fale diretamente com o usuário.
-    Retorne apenas a mensagem.`;
-    
+        Retorne a resposta como uma lista de objetos JSON.
+    `;
+
     try {
+        // FIX: Use ai.models.generateContent for generating content.
         const response = await ai.models.generateContent({
+            // FIX: Use 'gemini-2.5-flash' model for general text tasks.
             model: "gemini-2.5-flash",
             contents: prompt,
+            config: {
+                responseMimeType: "application/json",
+                responseSchema: {
+                    type: Type.ARRAY,
+                    items: {
+                        type: Type.OBJECT,
+                        properties: {
+                            name: {
+                                type: Type.STRING,
+                                description: "Nome curto e motivador da missão."
+                            },
+                            description: {
+                                type: Type.STRING,
+                                description: "Descrição clara e breve da missão."
+                            },
+                            reminderType: {
+                                type: Type.STRING,
+                                enum: ['alarm', 'sensitive', 'loud', 'call', 'game', 'whatsapp'],
+                                description: "Tipo de lembrete para a missão."
+                            }
+                        },
+                        required: ["name", "description", "reminderType"]
+                    }
+                }
+            }
         });
-        return response.text.trim();
+
+        // FIX: Access the text directly and parse it.
+        const jsonText = response.text.trim();
+        const result: AiSuggestedTask[] = JSON.parse(jsonText);
+        // Ensure reminderType is valid.
+        return result.map(task => ({ ...task, reminderType: task.reminderType as ReminderType }));
+
     } catch (error) {
-        console.error("Error analyzing check-in response from Gemini API:", error);
-        return "Entendido! Agradeço por me contar. Lembre-se de fazer uma pausa se precisar.";
+        console.error("Error getting suggested tasks from Gemini:", error);
+        // Return an empty array on error
+        return [];
     }
-};
+}
