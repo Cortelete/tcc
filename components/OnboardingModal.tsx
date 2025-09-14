@@ -16,9 +16,9 @@ interface OnboardingModalProps {
 
 const PowerCard: React.FC<{icon: JSX.Element, title: string, description: string, isSelected: boolean, onClick: () => void}> = 
 ({ icon, title, description, isSelected, onClick }) => (
-    <div onClick={onClick} className={`p-4 rounded-2xl cursor-pointer transition-all duration-300 ${isSelected ? 'bg-fuchsia-500/40 ring-2 ring-fuchsia-400' : 'bg-white/10 hover:bg-white/20'}`}>
+    <div onClick={onClick} className={`p-4 rounded-2xl cursor-pointer transition-all duration-300 ${isSelected ? 'bg-violet-500/40 ring-2 ring-violet-400' : 'bg-white/10 hover:bg-white/20'}`}>
         <div className="flex items-center gap-4">
-            <div className={`${isSelected ? 'text-fuchsia-300' : 'text-white/80'}`}>{icon}</div>
+            <div className={`${isSelected ? 'text-violet-300' : 'text-white/80'}`}>{icon}</div>
             <div>
                 <h3 className="font-bold text-lg text-white">{title}</h3>
                 <p className="text-sm text-white/70">{description}</p>
@@ -103,7 +103,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ user, onComplete }) =
                         <p className="text-center text-white/70 mb-6">Vamos começar personalizando sua jornada.</p>
                         <div className="mb-6">
                             <label htmlFor="hero-name" className="block text-sm font-medium text-white/70 mb-1">Nome do Herói</label>
-                            <input type="text" id="hero-name" value={name} onChange={e => setName(e.target.value)} className="w-full glass-input px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-fuchsia-400" />
+                            <input type="text" id="hero-name" value={name} onChange={e => setName(e.target.value)} className="w-full glass-input px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-violet-400" />
                         </div>
                         <div>
                             <label className="block text-sm font-medium text-white/70 mb-2">Escolha seu Poder Principal</label>
@@ -126,7 +126,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ user, onComplete }) =
                                     </select>
                                 </div>
                                 <div className="flex items-start gap-2">
-                                    <input type="checkbox" id="medical-report" checked={hasMedicalReport} onChange={e => setHasMedicalReport(e.target.checked)} className="mt-1 h-4 w-4 rounded bg-gray-700 border-gray-600 text-fuchsia-600 focus:ring-fuchsia-500"/>
+                                    <input type="checkbox" id="medical-report" checked={hasMedicalReport} onChange={e => setHasMedicalReport(e.target.checked)} className="mt-1 h-4 w-4 rounded bg-gray-700 border-gray-600 text-violet-600 focus:ring-violet-500"/>
                                     <label htmlFor="medical-report" className="text-sm text-white/70">
                                         Confirmo que possuo um laudo profissional para a condição selecionada.
                                     </label>
@@ -137,7 +137,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ user, onComplete }) =
                 );
             case 2:
                  return (
-                    <div className="max-h-[70vh] overflow-y-auto pr-2">
+                    <div>
                         <h2 className="text-2xl font-bold text-center mb-2">Mapeando a Jornada</h2>
                         <p className="text-center text-white/70 mb-4">Monte sua rotina inicial para começar a aventura.</p>
                         <div className="bg-yellow-500/20 text-yellow-200 text-sm p-3 rounded-lg mb-4">
@@ -151,7 +151,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ user, onComplete }) =
                                 {SUGGESTED_ONBOARDING_TASKS.map(task => {
                                     const isSelected = tasks.some(t => t.name === task.name);
                                     return (
-                                        <button type="button" key={task.name} onClick={() => handleToggleSuggestedTask(task)} className={`flex items-center gap-2 p-2 rounded-lg transition-all text-left ${isSelected ? 'bg-fuchsia-500/40 ring-1 ring-fuchsia-400' : 'bg-black/20 hover:bg-black/40'}`}>
+                                        <button type="button" key={task.name} onClick={() => handleToggleSuggestedTask(task)} className={`flex items-center gap-2 p-2 rounded-lg transition-all text-left ${isSelected ? 'bg-violet-500/40 ring-1 ring-violet-400' : 'bg-black/20 hover:bg-black/40'}`}>
                                             {task.icon} <span className="text-sm">{task.name}</span>
                                         </button>
                                     )
@@ -168,7 +168,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ user, onComplete }) =
                                     <input type="time" value={medTime} onChange={e => setMedTime(e.target.value)} className="w-1/2 text-sm glass-input px-3 py-2 rounded-md" required/>
                                     <input type="text" value={medDosage} onChange={e => setMedDosage(e.target.value)} placeholder="Dosagem" className="w-1/2 text-sm glass-input px-3 py-2 rounded-md" />
                                 </div>
-                                <button type="submit" className="w-full bg-blue-600 text-white font-bold text-sm py-2 rounded-lg hover:bg-blue-700">Adicionar Remédio</button>
+                                <button type="submit" className="w-full bg-violet-600 text-white font-bold text-sm py-2 rounded-lg hover:bg-violet-700">Adicionar Remédio</button>
                             </form>
                         </div>
                          {/* Adicionar Outra Tarefa */}
@@ -176,7 +176,7 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ user, onComplete }) =
                              <h3 className="font-semibold text-white/80 mb-2">Adicionar Outra Tarefa</h3>
                              <form onSubmit={handleAddCustomTask} className="flex gap-2">
                                 <input type="text" value={customTaskName} onChange={e => setCustomTaskName(e.target.value)} placeholder="Ex: Organizar a mesa" className="flex-grow text-sm glass-input px-3 py-2 rounded-lg" />
-                                <button type="submit" className="bg-fuchsia-600 text-white font-bold p-2 rounded-lg hover:bg-fuchsia-700">{ICONS.plus}</button>
+                                <button type="submit" className="bg-violet-600 text-white font-bold p-2 rounded-lg hover:bg-violet-700">{ICONS.plus}</button>
                             </form>
                         </div>
                         
@@ -254,17 +254,21 @@ const OnboardingModal: React.FC<OnboardingModalProps> = ({ user, onComplete }) =
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
             <div className="w-full max-w-md">
-                 <div className="p-6 glass-card rounded-2xl shadow-2xl border-0">
-                    {renderStep()}
-                    <div className="mt-6 flex gap-3 justify-between items-center">
-                        {step > 1 && step < 4 && <button onClick={handleBack} className="py-2 px-4 rounded-lg text-white/70 hover:text-white">Voltar</button>}
-                        {step === 1 && <div />}
-                        {step < 4 && <button onClick={handleNext} disabled={!canProceed()} className="flex-grow bg-fuchsia-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-fuchsia-700 disabled:bg-gray-500 disabled:cursor-not-allowed">Próximo</button>}
-                        {step === 4 && <button onClick={handleComplete} className="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700">Começar a Jornada!</button>}
+                 <div className="glass-card rounded-2xl shadow-2xl border-0 flex flex-col max-h-[90vh]">
+                    <div className="p-6 overflow-y-auto">
+                        {renderStep()}
+                    </div>
+                    <div className="p-6 pt-0 shrink-0">
+                        <div className="flex gap-3 justify-between items-center">
+                            {step > 1 && step < 4 && <button onClick={handleBack} className="py-2 px-4 rounded-lg text-white/70 hover:text-white">Voltar</button>}
+                            {step === 1 && <div />}
+                            {step < 4 && <button onClick={handleNext} disabled={!canProceed()} className="flex-grow bg-violet-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-violet-700 disabled:bg-gray-500 disabled:cursor-not-allowed">Próximo</button>}
+                            {step === 4 && <button onClick={handleComplete} className="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700">Começar a Jornada!</button>}
+                        </div>
                     </div>
                  </div>
                  <div className="w-full h-2 bg-black/20 rounded-full mt-4 overflow-hidden">
-                    <div className="h-2 bg-fuchsia-500 rounded-full transition-all duration-500" style={{width: `${(step/4)*100}%`}}></div>
+                    <div className="h-2 bg-violet-500 rounded-full transition-all duration-500" style={{width: `${(step/4)*100}%`}}></div>
                  </div>
             </div>
         </div>

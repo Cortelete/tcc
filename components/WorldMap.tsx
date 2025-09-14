@@ -17,7 +17,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ progress }) => {
   const unlockedNodes = Math.min(progress, MAP_NODES.length - 1);
 
   return (
-    <div className="relative w-full h-48 bg-black/20 rounded-xl p-2">
+    <div className="relative w-full h-40 sm:h-48 bg-black/20 rounded-xl p-2">
       <svg width="100%" height="100%" viewBox="0 0 400 150">
         {/* Path Background */}
         <path
@@ -47,7 +47,7 @@ const WorldMap: React.FC<WorldMapProps> = ({ progress }) => {
        
         <defs>
             <linearGradient id="path-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" style={{stopColor: '#a855f7', stopOpacity: 1}} />
+                <stop offset="0%" style={{stopColor: '#8b5cf6', stopOpacity: 1}} />
                 <stop offset="100%" style={{stopColor: '#38bdf8', stopOpacity: 1}} />
             </linearGradient>
         </defs>
@@ -65,8 +65,8 @@ const WorldMap: React.FC<WorldMapProps> = ({ progress }) => {
             >
               <div
                 className={`w-6 h-6 rounded-full flex items-center justify-center transition-all duration-1000
-                  ${isUnlocked ? 'bg-fuchsia-500' : 'bg-gray-600'}
-                  ${isCurrent ? 'ring-4 ring-offset-2 ring-offset-gray-800 ring-cyan-400' : ''}
+                  ${isUnlocked ? 'bg-violet-500' : 'bg-gray-600'}
+                  ${isCurrent ? 'ring-4 ring-offset-2 ring-offset-slate-800 ring-cyan-400' : ''}
                 `}
               >
                 {isUnlocked && <span className="text-xs font-bold">{index+1}</span>}

@@ -62,7 +62,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask,
     resetForm();
   };
   
-  const inputStyle = "mt-1 w-full border-gray-600/50 bg-gray-700/50 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-white p-2";
+  const inputStyle = "mt-1 w-full glass-input p-2 rounded-md shadow-sm focus:ring-violet-500 focus:border-violet-500";
   const labelStyle = "block text-sm font-medium text-white/70";
 
   return (
@@ -86,7 +86,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask,
         
         {taskType === 'medication' && (
             <>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                         <label htmlFor="task-category" className={labelStyle}>Categoria</label>
                         <input type="text" id="task-category" value={category} onChange={e => setCategory(e.target.value)} placeholder="Ex: Vitamina" className={inputStyle}/>
@@ -114,7 +114,7 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask,
             </div>
         )}
        
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
                 <label htmlFor="task-time" className={labelStyle}>Horário de Início</label>
                 <input type="time" id="task-time" value={startTime} onChange={e => setStartTime(e.target.value)} required className={inputStyle}/>
@@ -144,8 +144,8 @@ const AddTaskModal: React.FC<AddTaskModalProps> = ({ isOpen, onClose, onAddTask,
           </select>
         </div>
         <div className="pt-4 flex justify-end gap-3">
-            <button type="button" onClick={onClose} className="py-2 px-4 border border-white/20 rounded-md shadow-sm text-sm font-medium text-white/80 bg-white/10 hover:bg-white/20">Cancelar</button>
-            <button type="submit" className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700">Adicionar Tarefa</button>
+            <button type="button" onClick={onClose} className="py-2 px-4 rounded-md shadow-sm text-sm font-medium text-white/80 bg-slate-500/20 hover:bg-slate-500/30">Cancelar</button>
+            <button type="submit" className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-violet-600 hover:bg-violet-700">Adicionar Tarefa</button>
         </div>
       </form>
     </Modal>

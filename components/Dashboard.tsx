@@ -122,14 +122,14 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogTask, onAcceptMission 
     }
 
     const getReminderIcon = (reminderType: ReminderType) => {
-        const iconClass = "w-10 h-10 flex items-center justify-center rounded-full";
+        const iconClass = "w-8 h-8 sm:w-10 sm:h-10 flex items-center justify-center rounded-full";
         switch(reminderType) {
-            case 'sensitive': return <div className={`${iconClass} bg-sky-500/20 text-sky-300`}>{ICONS.sensitive}</div>;
+            case 'sensitive': return <div className={`${iconClass} bg-cyan-500/20 text-cyan-300`}>{ICONS.sensitive}</div>;
             case 'loud': return <div className={`${iconClass} bg-amber-500/20 text-amber-300`}>{ICONS.loud}</div>;
             case 'call': return <div className={`${iconClass} bg-rose-500/20 text-rose-300`}>{ICONS.phone}</div>;
             case 'game': return <div className={`${iconClass} bg-violet-500/20 text-violet-300`}>{ICONS.game}</div>;
             case 'whatsapp': return <div className={`${iconClass} bg-emerald-500/20 text-emerald-300`}>{ICONS.whatsapp}</div>;
-            default: return <div className={`${iconClass} bg-blue-500/20 text-blue-300`}>{ICONS.bell}</div>;
+            default: return <div className={`${iconClass} bg-slate-500/20 text-slate-300`}>{ICONS.bell}</div>;
         }
     }
 
@@ -138,8 +138,8 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogTask, onAcceptMission 
         .sort((a, b) => a.time.getTime() - b.time.getTime());
 
     return (
-        <div className="p-4 md:p-6 space-y-6 relative pb-20">
-            {showXp && <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-green-500/80 text-white font-bold py-2 px-4 rounded-full shadow-lg z-50 animate-bounce">+10 XP</div>}
+        <div className="p-4 space-y-4 md:p-6 md:space-y-6 relative pb-20">
+            {showXp && <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-emerald-500/80 text-white font-bold py-2 px-4 rounded-full shadow-lg z-50 animate-bounce">+10 XP</div>}
             
             <Mascot message={mascotMessage} />
 
@@ -151,13 +151,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogTask, onAcceptMission 
                     ) : (
                         <div className="space-y-4">
                             {suggestedMissions.map(mission => (
-                                <div key={mission.name} className="mission-card mission-card-enhanced p-4 rounded-xl shadow-lg">
-                                   <p className="font-bold text-lg text-fuchsia-300">{mission.name}</p>
-                                   <p className="text-white/80 mb-4 text-sm">{mission.description}</p>
+                                <div key={mission.name} className="mission-card-enhanced p-3 sm:p-4 rounded-xl shadow-lg border-2 border-transparent" style={{background: 'linear-gradient(rgba(139, 92, 246, 0.1), rgba(139, 92, 246, 0.2))'}}>
+                                   <p className="font-bold text-lg text-violet-300">{mission.name}</p>
+                                   <p className="text-white/80 mb-3 sm:mb-4 text-xs sm:text-sm">{mission.description}</p>
                                    <button 
                                         onClick={() => handleAcceptMissionClick(mission)} 
                                         disabled={!canAcceptMoreMissions}
-                                        className="w-full text-sm bg-gradient-to-r from-fuchsia-600 to-purple-600 text-white font-semibold py-2 px-3 rounded-lg hover:from-fuchsia-700 hover:to-purple-700 transition-all transform hover:scale-105 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed disabled:scale-100"
+                                        className="w-full text-sm bg-gradient-to-r from-violet-600 to-cyan-600 text-white font-semibold py-2 px-3 rounded-lg hover:from-violet-700 hover:to-cyan-700 transition-all transform hover:scale-105 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed disabled:scale-100"
                                     >
                                         {canAcceptMoreMissions ? 'Aceitar Missão' : 'Limite Atingido'}
                                     </button>
@@ -183,40 +183,42 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogTask, onAcceptMission 
                         const isMission = task.isMission;
 
                         return (
-                           <div key={`${task.id}-${time.toISOString()}`} className="flex items-center justify-between p-3 rounded-xl bg-black/10">
-                                <div className="flex items-center gap-4">
+                           <div key={`${task.id}-${time.toISOString()}`} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl bg-black/20 gap-3">
+                                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
                                     {getReminderIcon(task.reminderType)}
-                                    <div>
-                                        <p className="font-semibold text-white/90 flex items-center gap-2">
-                                            {task.name}
+                                    <div className="flex-1 min-w-0">
+                                        <p className="font-semibold text-white/90 flex items-center gap-2 text-sm sm:text-base truncate">
+                                            <span className="truncate">{task.name}</span>
                                             {isSoon && status === AdherenceStatus.PENDING && (
-                                                <span className="time-badge bg-amber-500/20 text-amber-300 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1">
+                                                <span className="time-badge bg-amber-400/20 text-amber-300 text-xs font-bold px-2 py-1 rounded-full flex items-center gap-1 shrink-0">
                                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Breve
                                                 </span>
                                             )}
                                         </p>
-                                        <p className="text-sm text-white/60">{time.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} - {task.description}</p>
+                                        <p className="text-xs sm:text-sm text-white/60 truncate">{time.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} - {task.description}</p>
                                     </div>
                                 </div>
+                                <div className="shrink-0 w-full sm:w-auto">
                                 {status === AdherenceStatus.TAKEN ? (
-                                    <button className="w-40 text-sm bg-green-500/20 text-green-300 font-semibold py-2 px-3 rounded-lg flex items-center justify-center gap-2 cursor-not-allowed" disabled>
+                                    <button className="w-full sm:w-40 text-sm bg-emerald-500/20 text-emerald-300 font-semibold py-2 px-3 rounded-lg flex items-center justify-center gap-2 cursor-not-allowed" disabled>
                                         {ICONS.check} {isMission ? "Missão Concluída" : "Concluído"}
                                     </button>
                                 ) : status === AdherenceStatus.MISSED ? (
-                                    <button onClick={() => handleRegisterClick(task, time)} className="w-40 text-sm bg-yellow-500/20 text-yellow-300 font-semibold py-2 px-3 rounded-lg hover:bg-yellow-500/30 transition-colors">
+                                    <button onClick={() => handleRegisterClick(task, time)} className="w-full sm:w-40 text-sm bg-amber-500/20 text-amber-300 font-semibold py-2 px-3 rounded-lg hover:bg-amber-500/30 transition-colors">
                                         Registrar Atraso
                                     </button>
                                 ) : (
                                      isMission ? (
-                                        <button onClick={() => handleRegisterClick(task, time)} className="w-40 text-sm bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold py-2 px-3 rounded-lg hover:from-amber-600 hover:to-orange-600 transition-colors shadow-[0_0_15px_rgba(245,158,11,0.5)] transform hover:scale-105">
+                                        <button onClick={() => handleRegisterClick(task, time)} className="w-full sm:w-40 text-sm bg-gradient-to-r from-amber-500 to-orange-500 text-white font-semibold py-2 px-3 rounded-lg hover:from-amber-600 hover:to-orange-600 transition-colors shadow-[0_0_15px_rgba(245,158,11,0.5)] transform hover:scale-105">
                                             Missão Concluída!
                                         </button>
                                      ) : (
-                                        <button onClick={() => handleRegisterClick(task, time)} className="w-40 text-sm bg-blue-500 text-white font-semibold py-2 px-3 rounded-lg hover:bg-blue-600 transition-colors shadow-[0_0_15px_rgba(59,130,246,0.5)]">
+                                        <button onClick={() => handleRegisterClick(task, time)} className="w-full sm:w-40 text-sm bg-violet-600 text-white font-semibold py-2 px-3 rounded-lg hover:bg-violet-700 transition-colors shadow-[0_0_15px_rgba(139,92,246,0.5)]">
                                             Registrar
                                         </button>
                                      )
                                 )}
+                                </div>
                             </div>
                         );
                     }) : (

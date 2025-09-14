@@ -15,7 +15,7 @@ const NavButton: React.FC<{
 }> = ({ icon, label, isActive, onClick }) => (
     <button 
         onClick={onClick}
-        className={`flex flex-col items-center justify-center w-full transition-colors duration-300 ${isActive ? 'text-fuchsia-400' : 'text-white/60 hover:text-white'}`}
+        className={`flex flex-col items-center justify-center w-full transition-colors duration-300 ${isActive ? 'text-violet-400' : 'text-white/60 hover:text-white'}`}
     >
         {icon}
         <span className="text-xs font-medium">{label}</span>
@@ -35,7 +35,7 @@ const Navigation: React.FC<NavigationProps> = ({ activeView, setActiveView, onAd
              <div className="w-16 h-16">
                  <button
                     onClick={onAddTaskClick}
-                    className="absolute bottom-6 left-1/2 -translate-x-1/2 w-16 h-16 bg-gradient-to-br from-fuchsia-500 to-blue-600 text-white rounded-full shadow-lg hover:scale-110 transition-transform flex items-center justify-center"
+                    className="absolute bottom-6 left-1/2 -translate-x-1/2 w-16 h-16 bg-gradient-to-br from-violet-500 to-cyan-600 text-white rounded-full shadow-lg hover:scale-110 transition-transform flex items-center justify-center"
                     aria-label="Adicionar Nova Tarefa"
                 >
                     {ICONS.plus}

@@ -37,7 +37,7 @@ const Mascot: React.FC<MascotProps> = ({ message }) => {
     <div className="fixed bottom-24 right-4 z-40 w-64">
       {showMessage && (
         <div className="speech-bubble glass-card p-4 rounded-xl shadow-lg mb-4"
-             style={{background: 'rgba(30, 41, 59, 0.8)', borderColor: 'rgba(255, 255, 255, 0.2)'}}>
+             style={{background: 'rgba(15, 23, 42, 0.8)'}}>
           <p className="text-white/90 text-sm">{typedMessage}</p>
         </div>
       )}

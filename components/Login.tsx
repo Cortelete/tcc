@@ -25,7 +25,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
       <div className="p-8 glass-card rounded-2xl shadow-2xl w-full max-w-sm border-0">
         <div className="flex justify-center mb-6">
             <div className="flex items-center gap-3">
-                <span className="text-fuchsia-400">{ICONS.brain}</span>
+                <span className="text-violet-400">{ICONS.brain}</span>
                 <h1 className="text-2xl font-bold text-white">NeuroSync AI</h1>
             </div>
         </div>
@@ -40,7 +40,7 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="mt-1 block w-full px-4 py-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-400 focus:border-fuchsia-400 glass-input"
+              className="mt-1 block w-full px-4 py-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 glass-input"
               placeholder="teste"
             />
           </div>
@@ -53,14 +53,14 @@ const Login: React.FC<LoginProps> = ({ onLogin }) => {
               id="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="mt-1 block w-full px-4 py-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-fuchsia-400 focus:border-fuchsia-400 glass-input"
+              className="mt-1 block w-full px-4 py-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 glass-input"
               placeholder="1234"
             />
           </div>
           {error && <p className="text-red-400 text-sm text-center pt-2">{error}</p>}
           <button
             type="submit"
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-md font-medium text-white bg-fuchsia-600 hover:bg-fuchsia-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-fuchsia-500 transition-all duration-300 transform hover:scale-105"
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-md font-medium text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 transition-all duration-300 transform hover:scale-105"
           >
             Entrar
           </button>

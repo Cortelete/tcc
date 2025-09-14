@@ -48,17 +48,17 @@ const TaskChart: React.FC<TaskChartProps> = ({ history }) => {
                 <Tooltip
                     cursor={{fill: 'rgba(255, 255, 255, 0.1)'}}
                     contentStyle={{ 
-                        background: 'rgba(30, 41, 59, 0.8)',
+                        background: 'rgba(15, 23, 42, 0.8)',
                         backdropFilter: 'blur(10px)',
-                        border: '1px solid rgba(255, 255, 255, 0.2)', 
+                        border: '1px solid rgba(100, 116, 139, 0.3)', 
                         borderRadius: '0.75rem',
                         color: '#fff'
                     }}
                     labelStyle={{ color: '#fff', fontWeight: 'bold' }}
                 />
                 <Legend wrapperStyle={{paddingTop: '10px'}} iconSize={12} formatter={(value) => <span style={{color: 'rgba(255, 255, 255, 0.9)'}}>{value}</span>} />
-                <Bar dataKey="completas" fill="#22C55E" name="Completas" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="perdidas" fill="#F43F5E" name="Perdidas" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="completas" fill="#34d399" name="Completas" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="perdidas" fill="#f43f5e" name="Perdidas" radius={[4, 4, 0, 0]} />
             </BarChart>
         </ResponsiveContainer>
     </div>

@@ -9,7 +9,7 @@ interface GamifiedTaskModalProps {
   taskName: string;
 }
 
-const COLORS = ['#EF4444', '#3B82F6', '#FBBF24', '#22C55E']; // red, blue, yellow, green
+const COLORS = ['#f43f5e', '#3b82f6', '#f59e0b', '#34d399']; // rose, blue, amber, emerald
 const SEQUENCE_LENGTH = 4;
 
 const GamifiedTaskModal: React.FC<GamifiedTaskModalProps> = ({ isOpen, onClose, onComplete, taskName }) => {
@@ -97,12 +97,12 @@ const GamifiedTaskModal: React.FC<GamifiedTaskModalProps> = ({ isOpen, onClose, 
           ))}
         </div>
         {status === 'won' && (
-          <button onClick={onComplete} className="mt-4 w-full bg-green-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-600 flex items-center justify-center gap-2 transition-all">
+          <button onClick={onComplete} className="mt-4 w-full bg-emerald-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-emerald-600 flex items-center justify-center gap-2 transition-all">
             {ICONS.check} Confirmar Conclusão
           </button>
         )}
         {status === 'lost' && (
-          <button onClick={generateSequence} className="mt-4 w-full bg-blue-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-600 transition-all">
+          <button onClick={generateSequence} className="mt-4 w-full bg-violet-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-violet-600 transition-all">
             Tentar Novamente
           </button>
         )}
