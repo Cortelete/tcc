@@ -29,15 +29,12 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
       <div className="p-8 glass-card rounded-2xl shadow-2xl w-full max-w-sm border-0">
         <div className="flex flex-col items-center justify-center mb-6">
             <img 
-              src="/public/moeda.png" 
+              src="/moeda.png" 
               alt="Moeda da Sorte" 
               className={`w-20 h-20 mb-4 cursor-pointer coin ${isSpinning ? 'spinning' : ''}`}
               onClick={handleCoinClick}
             />
-            <div className="flex items-center gap-3">
-                <img src="/public/logo.png" alt="NeuroSync Logo" className="h-8 w-8"/>
-                <h1 className="text-2xl font-bold text-white">NeuroSync AI</h1>
-            </div>
+            <img src="/logo.png" alt="NeuroSync Logo" className="h-14"/>
         </div>
         <h2 className="text-xl font-semibold text-center text-white/80 mb-8">Acesse sua conta</h2>
         <form onSubmit={handleLogin} className="space-y-6">

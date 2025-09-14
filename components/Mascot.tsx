@@ -64,7 +64,7 @@ const Mascot: React.FC<MascotProps> = ({ systemMessage, user }) => {
         role="button"
         aria-label="Mascote Sync. Clique para uma dica."
       >
-        <img src="/public/mascot.png" alt="Mascote Sync" className="w-full h-full object-contain"/>
+        <img src="/mascot.png" alt="Mascote Sync" className="w-full h-full object-contain"/>
       </div>
     </div>
   );
