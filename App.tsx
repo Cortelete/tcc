@@ -170,7 +170,7 @@ const App: React.FC = () => {
     }
     
     return (
-        <div className="font-sans text-white pb-28">
+        <div className="main-background font-sans text-white pb-28 min-h-screen">
             <header className="sticky top-0 z-20 glass-card border-b-0 rounded-none">
                 <div className="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
                     <div className="flex items-center gap-2">

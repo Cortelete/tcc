@@ -7,11 +7,14 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
       body {
+        background-color: #1e1b4b; /* Fallback background */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+      .main-background {
         background: linear-gradient(-45deg, #1e1b4b, #164e63, #4c1d95, #86198f);
         background-size: 400% 400%;
         animation: gradient 20s ease infinite;
-        -webkit-font-smoothing: antialiased;
-        -moz-osx-font-smoothing: grayscale;
       }
       @keyframes gradient {
         0% { background-position: 0% 50%; }
