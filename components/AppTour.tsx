@@ -106,39 +106,24 @@ const AppTour: React.FC<AppTourProps> = ({ onComplete }) => {
 
   const getModalPosition = (): React.CSSProperties => {
     const style: React.CSSProperties = {};
-    if (highlightRect) {
-      const modalOffset = 16; // Space between highlight and modal
-      switch (currentStep.placement) {
-        case 'top-center':
-          style.top = `${highlightRect.top - modalOffset}px`;
-          style.left = `${highlightRect.left + highlightRect.width / 2}px`;
-          style.transform = 'translate(-50%, -100%)';
-          break;
-        case 'bottom-center':
-          style.top = `${highlightRect.top + highlightRect.height + modalOffset}px`;
-          style.left = `${highlightRect.left + highlightRect.width / 2}px`;
-          style.transform = 'translate(-50%, 0)';
-          break;
-        case 'left-center':
-           style.top = `${highlightRect.top + highlightRect.height / 2}px`;
-           style.left = `${highlightRect.left - modalOffset}px`;
-           style.transform = 'translate(-100%, -50%)';
-           break;
-        default:
-          style.top = '50%';
-          style.left = '50%';
-          style.transform = 'translate(-50%, -50%)';
-      }
-    } else {
+    if (currentStep.placement === 'center') {
+      // For introduction/conclusion, center the modal.
       style.top = '50%';
       style.left = '50%';
       style.transform = 'translate(-50%, -50%)';
+    } else {
+      // For all steps that highlight an element, fix the modal
+      // to the bottom-center of the screen. This is the most robust
+      // way to prevent it from being cut off by viewport edges.
+      style.bottom = '2rem'; // 32px from bottom
+      style.left = '50%';
+      style.transform = 'translateX(-50%)';
     }
     return style;
   };
 
   return (
-    <div className="fixed inset-0 z-[1000]">
+    <div className="fixed inset-0 z-[9999]">
       <div
         className="tour-highlight-wrapper"
         style={
