@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect } from 'react';
 import { UserProfile, Task, AdherenceStatus, CharacterPower, Achievement, AiSuggestedTask, TaskCriticality, Anamnesis } from './types';
 import Dashboard from './components/Dashboard';
@@ -11,8 +10,10 @@ import { ACHIEVEMENTS, SUGGESTED_ONBOARDING_TASKS, MAP_NODES } from './constants
 import Mascot from './components/Mascot';
 import useLocalStorage from './hooks/useLocalStorage';
 import { ICONS } from './constants';
+import Login from './components/Login';
 
 const App: React.FC = () => {
+    const [isAuthenticated, setIsAuthenticated] = useLocalStorage('isAuthenticated', false);
     const [currentUserProfile, setCurrentUserProfile] = useLocalStorage<UserProfile | null>('user-profile', null);
     const [hasSeenTour, setHasSeenTour] = useLocalStorage('hasSeenTour', false);
     
@@ -154,9 +155,19 @@ const App: React.FC = () => {
         setCurrentUserProfile(prev => prev ? { ...prev, dailyMissionAcceptances: newAcceptances } : null);
     };
     
+    const handleLoginSuccess = () => {
+        setIsAuthenticated(true);
+    };
+
     const handleLogout = () => {
         setCurrentUserProfile(null);
+        setIsAuthenticated(false);
+        setHasSeenTour(false);
     };
+
+    if (!isAuthenticated) {
+        return <Login onLoginSuccess={handleLoginSuccess} />;
+    }
 
     if (!currentUserProfile) {
         return <OnboardingModal isOpen={true} onComplete={handleOnboardingComplete} />;
