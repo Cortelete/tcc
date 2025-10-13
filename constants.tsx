@@ -123,3 +123,12 @@ export const SUGGESTED_ONBOARDING_TASKS: Omit<Task, 'id'>[] = [
         taskType: 'generic'
     },
 ];
+
+export const MAP_NODES = [
+  { name: 'Vila Inicial', x: '10%', y: '80%' },
+  { name: 'Floresta dos Hábitos', x: '25%', y: '60%' },
+  { name: 'Picos da Concentração', x: '45%', y: '75%' },
+  { name: 'Rio da Memória', x: '65%', y: '55%' },
+  { name: 'Campos da Serenidade', x: '80%', y: '40%' },
+  { name: 'Cidadela da Maestria', x: '90%', y: '20%' },
+];

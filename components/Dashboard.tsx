@@ -171,7 +171,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogTask, onAcceptMission,
 
     if (isCaregiverMode) {
         return (
-            <div className="p-4 space-y-4 md:p-6 md:space-y-6 pb-20">
+            <div className="p-4 space-y-4 md:p-6 md:space-y-6 pb-20 md:pb-24">
                 <div className="glass-card p-4 rounded-2xl grid grid-cols-2 gap-4">
                     <div className="text-center p-2">
                         <p className="text-sm text-white/70">Adesão Hoje</p>
@@ -242,7 +242,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogTask, onAcceptMission,
     }
 
     return (
-        <div className="p-4 space-y-4 md:p-6 md:space-y-6 relative pb-20">
+        <div className="p-4 space-y-4 md:p-6 md:space-y-6 relative pb-20 md:pb-24">
             {showXp && <div className="fixed top-20 left-1/2 -translate-x-1/2 bg-emerald-500/80 text-white font-bold py-2 px-4 rounded-full shadow-lg z-50 animate-bounce">+10 XP</div>}
 
             {suggestedMissions.length > 0 && (
@@ -270,7 +270,7 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogTask, onAcceptMission,
                 </div>
             )}
 
-            <div className="glass-card p-4 rounded-2xl">
+            <div id="tasks-board" className="glass-card p-4 rounded-2xl">
                 <h3 className="text-lg font-bold text-white/90 mb-4 px-2">Quadro de Tarefas de Hoje</h3>
                 <div className="space-y-3">
                     {allTodayTasks.length > 0 ? allTodayTasks.map(({ task, time }) => {

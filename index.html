@@ -129,6 +129,128 @@
       .coin.spinning {
         transform: rotateY(1080deg);
       }
+
+      /* New World Map styles */
+      .journey-map-bg {
+          background: radial-gradient(ellipse at bottom, #1b2735 0%, #090a0f 100%);
+          overflow: hidden;
+          position: relative;
+      }
+      .journey-map-bg::before, .journey-map-bg::after { /* for stars */
+          content: '';
+          position: absolute;
+          background: transparent;
+          border-radius: 50%;
+          animation: twinkle 10s infinite linear;
+          box-shadow: 
+              10vw 20vh 1px #FFF, 80vw 30vh 2px #FFF, 
+              30vw 90vh 1px #FFF, 60vw 60vh 1px #FFF,
+              90vw 10vh 2px #FFF, 5vw 70vh 1px #FFF,
+              50vw 10vh 1px #FFF, 70vw 85vh 2px #FFF;
+      }
+      .journey-map-bg::after { /* a second layer of stars */
+          animation-delay: -5s; /* offset animation */
+          box-shadow: 
+              5vw 15vh 1px #FFF, 65vw 45vh 2px #FFF, 
+              40vw 80vh 1px #FFF, 95vw 55vh 1px #FFF;
+      }
+      @keyframes twinkle {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+      }
+
+      /* SVG Map Path styles */
+      .map-path {
+          stroke: #4b5563; /* gray-600 */
+          stroke-width: 1;
+          stroke-dasharray: 2 2;
+          transition: all 1.5s ease-in-out;
+      }
+      .map-path--unlocked {
+          stroke: #a78bfa; /* violet-400 */
+          stroke-width: 1.5;
+          stroke-dasharray: 100;
+          stroke-dashoffset: 100;
+          animation: draw-line 1.5s ease-out forwards;
+      }
+      @keyframes draw-line {
+          to { stroke-dashoffset: 0; }
+      }
+
+      /* SVG Map node styles */
+      .map-node {
+        transition: transform 0.5s ease-in-out;
+        transform-origin: 50% 50%;
+      }
+      .map-node-orb {
+          transition: all 0.5s ease;
+          stroke-width: 0.5;
+      }
+      .map-node-label {
+        transition: opacity 1s ease-in-out, font-size 0.5s ease;
+        font-size: 5px;
+        font-weight: bold;
+        paint-order: stroke;
+        stroke: #000;
+        stroke-width: 0.5px;
+        stroke-linecap: butt;
+        stroke-linejoin: miter;
+      }
+      .map-node--locked .map-node-orb {
+          fill: #4b5563; /* gray-600 */
+          stroke: #6b7280; /* gray-500 */
+          r: 3;
+      }
+      .map-node--locked .map-node-label {
+          fill: #9ca3af; /* gray-400 */
+          opacity: 0.8;
+      }
+      .map-node--unlocked .map-node-orb {
+          fill: #8b5cf6; /* violet-500 */
+          stroke: #a78bfa; /* violet-400 */
+          filter: drop-shadow(0 0 3px #8b5cf6);
+          r: 4;
+      }
+       .map-node--unlocked .map-node-label {
+          fill: #e0e7ff; /* indigo-100 */
+      }
+      .map-node--current {
+         animation: pulse-node 2s infinite ease-in-out;
+      }
+      .map-node--current .map-node-orb {
+          fill: #22d3ee; /* cyan-400 */
+          stroke: #67e8f9; /* cyan-300 */
+          r: 5;
+          filter: drop-shadow(0 0 4px #22d3ee) drop-shadow(0 0 8px #22d3ee);
+      }
+      .map-node--current .map-node-label {
+          fill: #ffffff;
+          font-size: 6px;
+      }
+      @keyframes pulse-node {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.1); }
+      }
+
+      /* App Tour styles */
+      .tour-highlight-wrapper {
+        position: absolute;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 12px;
+        box-shadow: 0 0 0 9999px rgba(0,0,0,0.7);
+        pointer-events: none;
+      }
+      .tour-modal {
+        position: absolute;
+        z-index: 1001;
+        width: clamp(280px, 80vw, 350px);
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: tour-fade-in 0.5s ease-out;
+      }
+      @keyframes tour-fade-in {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
     </style>
     <script type="importmap">
 {

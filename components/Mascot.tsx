@@ -128,7 +128,8 @@ const Mascot: React.FC<MascotProps> = ({ user, systemMessage }) => {
                     </div>
                 </div>
             )}
-            <button 
+            <button
+                id="mascot-button"
                 onClick={handleMascotClick} 
                 disabled={isLoading}
                 className="w-20 h-20 md:w-24 md:h-24 cursor-pointer drop-shadow-lg hover:scale-110 transition-transform focus:outline-none focus:ring-4 focus:ring-cyan-400 focus:ring-opacity-50 rounded-full"

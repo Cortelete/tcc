@@ -37,7 +37,7 @@ const ProfilePage: React.FC<ProfilePageProps> = ({ user }) => {
   const progressPercentage = (currentLevelXp / xpForNextLevel) * 100;
 
   return (
-    <div className="p-4 space-y-4 md:p-6 md:space-y-6 text-white pb-20">
+    <div className="p-4 space-y-4 md:p-6 md:space-y-6 text-white pb-20 md:pb-24">
       <div className="glass-card p-6 rounded-2xl flex flex-col items-center">
         <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center mb-4 shadow-lg">
             <span className="text-4xl sm:text-5xl font-bold">{user.name.charAt(0)}</span>
