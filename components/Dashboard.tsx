@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { User, AdherenceStatus, AiInsight, Task, ReminderType, AiSuggestedTask } from '../types';
+import { UserProfile, AdherenceStatus, AiInsight, Task, ReminderType, AiSuggestedTask, TaskCriticality } from '../types';
 import { ICONS } from '../constants';
 import TaskChart from './AdherenceChart';
 import { getTaskInsights, getSuggestedTasks } from '../services/geminiService';
@@ -7,10 +7,11 @@ import GamifiedTaskModal from './GamifiedTaskModal';
 import Mascot from './Mascot';
 
 interface DashboardProps {
-  user: User;
+  user: UserProfile;
   onLogTask: (taskId: string, scheduledTime: Date, status: AdherenceStatus) => void;
   onAcceptMission: (mission: Omit<Task, 'id' | 'criticality' | 'frequencyHours' | 'startTime' | 'taskType' | 'dosage' | 'instructions' | 'category' | 'subcategory'>) => void;
   setMascotMessage: (message: string | null) => void;
+  isCaregiverMode: boolean;
 }
 
 const getScheduleForToday = (task: Task): Date[] => {
@@ -41,7 +42,7 @@ const getScheduleForToday = (task: Task): Date[] => {
     return schedule.sort((a,b) => a.getTime() - b.getTime());
 }
 
-const Dashboard: React.FC<DashboardProps> = ({ user, onLogTask, onAcceptMission, setMascotMessage }) => {
+const Dashboard: React.FC<DashboardProps> = ({ user, onLogTask, onAcceptMission, setMascotMessage, isCaregiverMode }) => {
     const [aiInsight, setAiInsight] = useState<AiInsight | null>(null);
     const [suggestedMissions, setSuggestedMissions] = useState<AiSuggestedTask[]>([]);
     const [isLoadingMissions, setIsLoadingMissions] = useState(true);
@@ -57,6 +58,13 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogTask, onAcceptMission,
     }, [user.dailyMissionAcceptances]);
 
     const canAcceptMoreMissions = missionsAcceptedToday < 5;
+    
+    const getLogForScheduledTime = useCallback((taskId: string, scheduledTime: Date) => {
+        return user.taskHistory.find(log => 
+            log.taskId === taskId &&
+            new Date(log.scheduledTime).getTime() === scheduledTime.getTime()
+        );
+    }, [user.taskHistory]);
 
     const fetchInsightsAndMissions = useCallback(async () => {
         setIsLoadingMissions(true);
@@ -76,18 +84,46 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogTask, onAcceptMission,
         const insight = await getTaskInsights(user);
         setAiInsight(insight);
         
-    }, [user.characterPower, user.name, setMascotMessage]);
+    }, [user.characterPower, user.name, setMascotMessage, user.anamnesis, user.tasks, user.taskHistory]);
 
     useEffect(() => {
-        fetchInsightsAndMissions();
+        if (user.id) { // Fetch only when a user is fully loaded
+            fetchInsightsAndMissions();
+        }
     }, [user.id, user.taskHistory.length, fetchInsightsAndMissions]);
     
-    const getLogForScheduledTime = (taskId: string, scheduledTime: Date) => {
-        return user.taskHistory.find(log => 
-            log.taskId === taskId &&
-            new Date(log.scheduledTime).getTime() === scheduledTime.getTime()
-        );
-    }
+    const allTodayTasks = useMemo(() => user.tasks
+        .flatMap(task => getScheduleForToday(task).map(time => ({ task, time })))
+        .sort((a, b) => a.time.getTime() - b.time.getTime()), [user.tasks]);
+    
+    const caregiverStats = useMemo(() => {
+        if (!isCaregiverMode) return null;
+
+        const now = new Date();
+        const relevantTasks = allTodayTasks.filter(({ time }) => time <= now);
+
+        if (relevantTasks.length === 0) {
+            return { adherenceRate: 100, criticalMissedTasks: [] };
+        }
+
+        const takenTasksCount = relevantTasks.filter(({ task, time }) => {
+            const log = getLogForScheduledTime(task.id, time);
+            return log?.status === AdherenceStatus.TAKEN;
+        }).length;
+
+        const adherenceRate = Math.round((takenTasksCount / relevantTasks.length) * 100);
+
+        const criticalMissedTasks = allTodayTasks.filter(({ task, time }) => {
+            const log = getLogForScheduledTime(task.id, time);
+            const isPast = new Date() > time;
+            const status = log ? log.status : (isPast ? AdherenceStatus.MISSED : AdherenceStatus.PENDING);
+            return task.criticality === TaskCriticality.HIGH && status === AdherenceStatus.MISSED;
+        });
+
+        return { adherenceRate, criticalMissedTasks };
+
+    }, [isCaregiverMode, allTodayTasks, user.taskHistory, getLogForScheduledTime]);
+
     
     const triggerXpAnimation = () => {
         setShowXp(true);
@@ -133,9 +169,77 @@ const Dashboard: React.FC<DashboardProps> = ({ user, onLogTask, onAcceptMission,
         }
     }
 
-    const allTodayTasks = user.tasks
-        .flatMap(task => getScheduleForToday(task).map(time => ({ task, time })))
-        .sort((a, b) => a.time.getTime() - b.time.getTime());
+    if (isCaregiverMode) {
+        return (
+            <div className="p-4 space-y-4 md:p-6 md:space-y-6 pb-20">
+                <div className="glass-card p-4 rounded-2xl grid grid-cols-2 gap-4">
+                    <div className="text-center p-2">
+                        <p className="text-sm text-white/70">Adesão Hoje</p>
+                        <p className="text-3xl font-bold text-cyan-300">{caregiverStats?.adherenceRate}%</p>
+                    </div>
+                    <div className="text-center p-2">
+                        <p className="text-sm text-white/70">Alertas Críticos</p>
+                        <p className="text-3xl font-bold text-rose-400">{caregiverStats?.criticalMissedTasks.length}</p>
+                    </div>
+                </div>
+
+                {caregiverStats && caregiverStats.criticalMissedTasks.length > 0 && (
+                     <div className="glass-card p-4 rounded-2xl bg-rose-500/10 border border-rose-500/30">
+                        <h3 className="text-lg font-bold text-rose-300 mb-3">Atenção: Tarefas Críticas Perdidas</h3>
+                        <div className="space-y-2">
+                            {caregiverStats.criticalMissedTasks.map(({ task, time }) => (
+                                <div key={`${task.id}-${time.toISOString()}`} className="flex justify-between items-center text-sm p-2 bg-black/20 rounded-lg">
+                                    <span className="font-semibold text-white/90">{task.name}</span>
+                                    <span className="text-white/70">{time.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
+                <div className="glass-card p-4 rounded-2xl">
+                    <h3 className="text-lg font-bold text-white/90 mb-4 px-2">Monitoramento de Tarefas de Hoje</h3>
+                    <div className="space-y-3">
+                        {allTodayTasks.length > 0 ? allTodayTasks.map(({ task, time }) => {
+                             const log = getLogForScheduledTime(task.id, time);
+                             const isPast = new Date() > time;
+                             let status = log ? log.status : (isPast ? AdherenceStatus.MISSED : AdherenceStatus.PENDING);
+                             
+                             return (
+                                 <div key={`${task.id}-${time.toISOString()}`} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 rounded-xl bg-black/20 gap-3">
+                                     <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
+                                         {getReminderIcon(task.reminderType)}
+                                         <div className="flex-1 min-w-0">
+                                             <p className="font-semibold text-white/90 flex items-center gap-2 text-sm sm:text-base truncate">
+                                                <span className="truncate">{task.name}</span>
+                                             </p>
+                                             <p className="text-xs sm:text-sm text-white/60 truncate">{time.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} - {task.description}</p>
+                                         </div>
+                                     </div>
+                                     <div className="shrink-0 flex items-center gap-2 w-full sm:w-auto">
+                                         {status === AdherenceStatus.TAKEN ? (
+                                              <p className="w-full text-center text-sm text-emerald-300 font-semibold py-2 px-3">Confirmado</p>
+                                         ) : status === AdherenceStatus.MISSED ? (
+                                              <p className="w-full text-center text-sm text-rose-400 font-semibold py-2 px-3">Não Realizado</p>
+                                         ) : (
+                                            <>
+                                                <button onClick={() => onLogTask(task.id, time, AdherenceStatus.TAKEN)} className="w-1/2 sm:w-auto flex-1 text-sm bg-emerald-600 text-white font-semibold py-2 px-3 rounded-lg hover:bg-emerald-700 transition-colors">
+                                                    Feito
+                                                </button>
+                                                <button onClick={() => onLogTask(task.id, time, AdherenceStatus.MISSED)} className="w-1/2 sm:w-auto flex-1 text-sm bg-rose-600 text-white font-semibold py-2 px-3 rounded-lg hover:bg-rose-700 transition-colors">
+                                                    Perdido
+                                                </button>
+                                            </>
+                                         )}
+                                     </div>
+                                 </div>
+                             );
+                        }) : <p className="text-center text-white/60 py-4">Nenhuma tarefa agendada para hoje.</p>}
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="p-4 space-y-4 md:p-6 md:space-y-6 relative pb-20">

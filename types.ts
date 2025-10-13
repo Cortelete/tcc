@@ -45,7 +45,7 @@ export interface Achievement {
   name: string;
   description: string;
   icon: React.ReactNode;
-  condition: (user: User) => boolean;
+  condition: (user: UserProfile) => boolean;
 }
 
 export interface Anamnesis {
@@ -53,15 +53,14 @@ export interface Anamnesis {
     challenges: string;
 }
 
-export interface User {
-  id: string;
+// Renamed from User to UserProfile to avoid conflict with Supabase auth User type
+export interface UserProfile {
+  id: string; // Corresponds to Supabase auth.users.id
   name: string;
-  age?: number;
   characterPower: CharacterPower | null;
-  patientCondition?: string;
   anamnesis: Anamnesis | null;
-  tasks: Task[];
-  taskHistory: TaskLog[];
+  tasks: Task[]; // Populated from 'tasks' table
+  taskHistory: TaskLog[]; // Populated from 'task_history' table
   xp: number;
   achievements: string[];
   mapProgress: number;

@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { User } from '../types';
+import { UserProfile } from '../types';
 import { getMotivationalPhrase, getCheckInQuestion, analyzeCheckInResponse, getThinkingPhrase } from '../services/geminiService';
 
 interface MascotProps {
-    user: User;
+    user: UserProfile;
     systemMessage: string | null;
 }
 
@@ -20,7 +20,7 @@ const Mascot: React.FC<MascotProps> = ({ user, systemMessage }) => {
     const [interaction, setInteraction] = useState<Interaction | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const clickCount = useRef(0);
-    const interactionTimeout = useRef<NodeJS.Timeout | null>(null);
+    const interactionTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
     const clearInteraction = () => {
         if (interactionTimeout.current) {

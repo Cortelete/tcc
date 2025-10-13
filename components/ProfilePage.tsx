@@ -1,10 +1,10 @@
 import React from 'react';
-import { User, CharacterPower } from '../types';
+import { UserProfile, CharacterPower } from '../types';
 import { ICONS, ACHIEVEMENTS } from '../constants';
 import WorldMap from './WorldMap';
 
 interface ProfilePageProps {
-  user: User;
+  user: UserProfile;
 }
 
 const PowerDisplay: React.FC<{power: CharacterPower | null}> = ({power}) => {

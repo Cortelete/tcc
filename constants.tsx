@@ -1,5 +1,5 @@
 import React from 'react';
-import { User, TaskCriticality, AdherenceStatus, Achievement, Task } from './types';
+import { UserProfile, TaskCriticality, AdherenceStatus, Achievement, Task } from './types';
 
 export const ICONS = {
     user: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>,
@@ -27,6 +27,7 @@ export const ICONS = {
     power_calm: <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M14.828 14.828a4 4 0 01-5.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>,
     power_patient: <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" /></svg>,
     mascot: <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><circle cx="50" cy="50" r="40" stroke="#FFF" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="45" r="5" stroke="#FFF" fill="#FFF"/><circle cx="60" cy="45" r="5" stroke="#FFF" fill="#FFF"/><path d="M40 60 Q50 70 60 60" stroke="#FFF"/><path d="M20 50 A30 30 0 0 1 80 50" stroke="#FFF" fill="none" strokeDasharray="5 5"/><path d="M48 20 A20 20 0 0 1 52 20" stroke="#FFF" fill="#FFF" /></svg>,
+    caregiver: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M15 21a6 6 0 00-9-5.197M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>,
     water: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4H7zm0 0a4 4 0 004-4V5" /></svg>,
     meditate: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 17l4 4 4-4m-4-5v5m0 0V7m0 5a2 2 0 100-4 2 2 0 000 4z" /><path d="M12 21a9 9 0 100-18 9 9 0 000 18z" /></svg>,
     pause: <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18v-6a6 6 0 1112 0v6" /><path d="M6 12H5a3 3 0 00-3 3v2a3 3 0 003 3h1" /><path d="M18 12h1a3 3 0 013 3v2a3 3 0 01-3 3h-1" /></svg>,
@@ -39,21 +40,21 @@ export const ACHIEVEMENTS: Achievement[] = [
         name: 'Boas-Vindas, Herói!',
         description: 'Complete a configuração inicial.',
         icon: ICONS.welcome,
-        condition: (user: User) => true // Awarded manually
+        condition: (user: UserProfile) => true // Awarded manually
     },
     {
         id: 'first_step',
         name: 'Primeiro Passo',
         description: 'Conclua sua primeira tarefa.',
         icon: ICONS.first_step,
-        condition: (user: User) => user.taskHistory.filter(t => t.status === AdherenceStatus.TAKEN).length >= 1
+        condition: (user: UserProfile) => user.taskHistory.filter(t => t.status === AdherenceStatus.TAKEN).length >= 1
     },
     {
         id: 'morning_person',
         name: 'Madrugador',
         description: 'Conclua 3 tarefas antes das 9h.',
         icon: ICONS.morning,
-        condition: (user: User) => {
+        condition: (user: UserProfile) => {
             return user.taskHistory.filter(log => {
                 const time = new Date(log.actionTime || log.scheduledTime);
                 return log.status === AdherenceStatus.TAKEN && time.getHours() < 9;
@@ -65,7 +66,7 @@ export const ACHIEVEMENTS: Achievement[] = [
         name: 'Semana Perfeita',
         description: 'Conclua todas as tarefas agendadas por 7 dias seguidos.',
         icon: ICONS.perfect_week,
-        condition: (user: User) => {
+        condition: (user: UserProfile) => {
              // This is a simplified logic for demonstration
             const last7daysLogs = user.taskHistory.filter(log => {
                 const logDate = new Date(log.scheduledTime);

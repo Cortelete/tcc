@@ -1,22 +1,35 @@
 import React, { useState } from 'react';
 
 interface LoginProps {
-  onLogin: (username: string, password?: string) => boolean;
-  onSwitchToRegister: () => void;
+  onAuth: (mode: 'signIn' | 'signUp', email: string, password: string, username?: string) => Promise<{ success: boolean; error?: string }>;
 }
 
-const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
+const Login: React.FC<LoginProps> = ({ onAuth }) => {
+  const [isRegister, setIsRegister] = useState(false);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [isSpinning, setIsSpinning] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const success = onLogin(username, password);
-    if (!success) {
-      setError('Usuário ou senha inválidos.');
+    if (!username.trim() || !password.trim()) {
+      setError('Usuário e senha são obrigatórios.');
+      return;
     }
+    setError('');
+    setIsLoading(true);
+
+    // Using username as part of the email for Supabase auth, assuming a domain.
+    const email = `${username.toLowerCase().replace(/\s+/g, '')}@neurosync.app`;
+    const mode = isRegister ? 'signUp' : 'signIn';
+    const { success, error: authError } = await onAuth(mode, email, password, username);
+    
+    if (!success && authError) {
+      setError(authError);
+    }
+    setIsLoading(false);
   };
   
   const handleCoinClick = () => {
@@ -36,8 +49,8 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
             />
             <img src="/logo.png" alt="NeuroSync Logo" className="h-14"/>
         </div>
-        <h2 className="text-xl font-semibold text-center text-white/80 mb-8">Acesse sua conta</h2>
-        <form onSubmit={handleLogin} className="space-y-6">
+        <h2 className="text-xl font-semibold text-center text-white/80 mb-8">{isRegister ? 'Crie sua conta' : 'Acesse sua conta'}</h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
             <label htmlFor="username" className="block text-sm font-medium text-white/70 mb-1">
               Usuário
@@ -54,7 +67,7 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
           </div>
           <div>
             <label htmlFor="password"  className="block text-sm font-medium text-white/70 mb-1">
-              Senha (opcional)
+              Senha
             </label>
             <input
               type="password"
@@ -62,22 +75,24 @@ const Login: React.FC<LoginProps> = ({ onLogin, onSwitchToRegister }) => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               className="mt-1 block w-full px-4 py-3 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-violet-400 focus:border-violet-400 glass-input"
-              placeholder="Sua senha"
+              placeholder="Mínimo 6 caracteres"
+              required
             />
           </div>
           {error && <p className="text-red-400 text-sm text-center pt-2">{error}</p>}
           <button
             type="submit"
-            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-md font-medium text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 transition-all duration-300 transform hover:scale-105"
+            disabled={isLoading}
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-md font-medium text-white bg-violet-600 hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 transition-all duration-300 transform hover:scale-105 disabled:bg-violet-800 disabled:cursor-not-allowed"
           >
-            Entrar
+            {isLoading ? (isRegister ? 'Criando conta...' : 'Entrando...') : (isRegister ? 'Criar Conta' : 'Entrar')}
           </button>
         </form>
          <div className="text-center mt-6">
             <p className="text-sm text-white/70">
-                Não tem uma conta?{' '}
-                <button onClick={onSwitchToRegister} className="font-medium text-violet-400 hover:text-violet-300">
-                    Criar conta
+                {isRegister ? 'Já tem uma conta?' : 'Não tem uma conta?'}{' '}
+                <button onClick={() => { setIsRegister(!isRegister); setError(''); }} className="font-medium text-violet-400 hover:text-violet-300">
+                    {isRegister ? 'Entrar' : 'Criar conta'}
                 </button>
             </p>
         </div>

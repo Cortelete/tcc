@@ -1,20 +1,17 @@
-// FIX: Implement the geminiService to interact with the Google GenAI API.
 import { GoogleGenAI, Type } from "@google/genai";
-import { User, AiInsight, CharacterPower, AiSuggestedTask, ReminderType } from '../types';
+import { UserProfile, AiInsight, CharacterPower, AiSuggestedTask, ReminderType } from '../types';
 
-// FIX: Initialize GoogleGenAI with a named apiKey parameter as per the coding guidelines.
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
 /**
  * Analyzes user task history to provide insights and recommendations.
  */
-export async function getTaskInsights(user: User): Promise<AiInsight> {
+export async function getTaskInsights(user: UserProfile): Promise<AiInsight> {
     const prompt = `
         Analise o histórico de tarefas do seguinte usuário e forneça um insight e uma recomendação.
-        O usuário é ${user.name}, tem ${user.age} anos.
+        O usuário é ${user.name}.
         Seu poder principal é: ${user.characterPower}.
-        Sua condição é: ${user.patientCondition || 'Não informada'}.
-        Seus desafios diários são: "${user.anamnesis?.challenges}".
+        Seus desafios diários são: "${user.anamnesis?.challenges || 'não especificado'}".
         Aqui estão algumas de suas tarefas atuais: ${JSON.stringify(user.tasks.map(t => ({ name: t.name, criticality: t.criticality })))}.
         Este é o histórico recente de conclusão (últimos 10 registros): ${JSON.stringify(user.taskHistory.slice(-10))}.
 
@@ -25,9 +22,7 @@ export async function getTaskInsights(user: User): Promise<AiInsight> {
     `;
 
     try {
-        // FIX: Use ai.models.generateContent as per the coding guidelines.
         const response = await ai.models.generateContent({
-            // FIX: Use 'gemini-2.5-flash' model for general text tasks.
             model: "gemini-2.5-flash",
             contents: prompt,
             config: {
@@ -49,7 +44,6 @@ export async function getTaskInsights(user: User): Promise<AiInsight> {
             }
         });
         
-        // FIX: Access the text directly from the response object and parse it.
         const jsonText = response.text.trim();
         const result = JSON.parse(jsonText);
         return result;
@@ -92,9 +86,7 @@ export async function getSuggestedTasks(power: CharacterPower): Promise<AiSugges
     `;
 
     try {
-        // FIX: Use ai.models.generateContent for generating content.
         const response = await ai.models.generateContent({
-            // FIX: Use 'gemini-2.5-flash' model for general text tasks.
             model: "gemini-2.5-flash",
             contents: prompt,
             config: {
@@ -124,7 +116,6 @@ export async function getSuggestedTasks(power: CharacterPower): Promise<AiSugges
             }
         });
 
-        // FIX: Access the text directly and parse it.
         const jsonText = response.text.trim();
         const result: AiSuggestedTask[] = JSON.parse(jsonText);
         // Ensure reminderType is valid.
@@ -137,15 +128,14 @@ export async function getSuggestedTasks(power: CharacterPower): Promise<AiSugges
     }
 }
 
-// FIX: Implement and export missing Gemini service functions for Mascot component.
 /**
  * Generates a short motivational phrase for the user.
  */
-export async function getMotivationalPhrase(user: User): Promise<string> {
+export async function getMotivationalPhrase(user: UserProfile): Promise<string> {
     const prompt = `
         Crie uma frase motivacional curta e encorajadora para ${user.name}.
-        O objetivo principal de ${user.name} é "${user.anamnesis?.mainGoal}".
-        Seus desafios são: "${user.anamnesis?.challenges}".
+        O objetivo principal de ${user.name} é "${user.anamnesis?.mainGoal || 'não especificado'}".
+        Seus desafios são: "${user.anamnesis?.challenges || 'não especificado'}".
         Seu poder principal é: ${user.characterPower}.
         A frase deve ser positiva, inspiradora e falar diretamente com ${user.name}. 
         Mantenha a frase com no máximo 20 palavras.
@@ -181,7 +171,7 @@ export async function getThinkingPhrase(userName: string): Promise<string> {
 /**
  * Generates a check-in question for the user with multiple-choice options.
  */
-export async function getCheckInQuestion(user: User): Promise<{ questionText: string; options: string[] }> {
+export async function getCheckInQuestion(user: UserProfile): Promise<{ questionText: string; options: string[] }> {
     const prompt = `
         Crie uma pergunta de check-in rápida e gentil para o usuário ${user.name}, focando em seu bem-estar geral ou progresso em relação aos seus desafios ("${user.anamnesis?.challenges}").
         A pergunta deve ser de múltipla escolha. Forneça a pergunta e 3 ou 4 opções de resposta concisas.
@@ -230,7 +220,7 @@ export async function getCheckInQuestion(user: User): Promise<{ questionText: st
 /**
  * Analyzes the user's response to a check-in question and provides feedback.
  */
-export async function analyzeCheckInResponse(user: User, question: string, answer: string): Promise<string> {
+export async function analyzeCheckInResponse(user: UserProfile, question: string, answer: string): Promise<string> {
     const prompt = `
         O usuário ${user.name} respondeu a uma pergunta de check-in.
         Pergunta: "${question}"
@@ -238,7 +228,7 @@ export async function analyzeCheckInResponse(user: User, question: string, answe
         Com base na resposta, forneça uma mensagem curta, empática e de apoio.
         Se a resposta for positiva, comemore com ele.
         Se a resposta for neutra, ofereça encorajamento.
-        Se a resposta for negativa, ofereça uma dica gentil ou uma palavra de conforto, relacionada aos seus desafios ("${user.anamnesis?.challenges}").
+        Se a resposta for negativa, ofereça uma dica gentil ou uma palavra de conforto, relacionada aos seus desafios ("${user.anamnesis?.challenges || 'não especificado'}").
         Mantenha a resposta com no máximo 30 palavras. Fale diretamente com o usuário.
     `;
     try {
