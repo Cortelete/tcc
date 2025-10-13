@@ -38,7 +38,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         <img 
             src="/mascot.png" 
             alt="Mascote Sync" 
-            className="absolute -top-16 -right-16 w-40 h-40 opacity-20 transform rotate-12 pointer-events-none"
+            className="absolute -bottom-8 -right-8 w-40 h-40 opacity-20 transform -rotate-12 pointer-events-none"
         />
         <div className="flex flex-col items-center justify-center mb-6">
             <img 
