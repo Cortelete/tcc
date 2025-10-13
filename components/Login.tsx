@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 
 interface LoginProps {
   onLoginSuccess: () => void;
+  onStartRegister: () => void;
 }
 
-const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
+const Login: React.FC<LoginProps> = ({ onLoginSuccess, onStartRegister }) => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -89,6 +90,18 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 {isLoading ? 'Entrando...' : 'Entrar'}
               </button>
             </form>
+            <div className="text-center mt-6">
+                <p className="text-sm text-white/60">
+                    Não tem uma conta?{' '}
+                    <button
+                        type="button"
+                        onClick={onStartRegister}
+                        className="font-semibold text-violet-400 hover:text-violet-300 transition-colors"
+                    >
+                        Crie uma agora
+                    </button>
+                </p>
+            </div>
         </div>
       </div>
     </div>

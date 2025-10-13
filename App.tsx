@@ -16,6 +16,7 @@ const App: React.FC = () => {
     const [isAuthenticated, setIsAuthenticated] = useLocalStorage('isAuthenticated', false);
     const [currentUserProfile, setCurrentUserProfile] = useLocalStorage<UserProfile | null>('user-profile', null);
     const [hasSeenTour, setHasSeenTour] = useLocalStorage('hasSeenTour', false);
+    const [isRegistering, setIsRegistering] = useState(false);
     
     const [activeView, setActiveView] = useState<'dashboard' | 'profile'>('dashboard');
     const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
@@ -79,6 +80,8 @@ const App: React.FC = () => {
         };
 
         setCurrentUserProfile(newUser);
+        setIsAuthenticated(true);
+        setIsRegistering(false);
         setHasSeenTour(false); // Reset tour for new user
         setMascotMessage(`Bem-vindo(a), Herói ${data.name}! Sua jornada começa agora. Configurei suas primeiras tarefas.`);
     };
@@ -158,18 +161,23 @@ const App: React.FC = () => {
     const handleLoginSuccess = () => {
         setIsAuthenticated(true);
     };
+    
+    const handleStartRegister = () => {
+        setIsRegistering(true);
+    };
 
     const handleLogout = () => {
         setCurrentUserProfile(null);
         setIsAuthenticated(false);
         setHasSeenTour(false);
+        setIsRegistering(false);
     };
 
-    if (!isAuthenticated) {
-        return <Login onLoginSuccess={handleLoginSuccess} />;
+    if (!isAuthenticated && !isRegistering) {
+        return <Login onLoginSuccess={handleLoginSuccess} onStartRegister={handleStartRegister} />;
     }
 
-    if (!currentUserProfile) {
+    if (isRegistering || (isAuthenticated && !currentUserProfile)) {
         return <OnboardingModal isOpen={true} onComplete={handleOnboardingComplete} />;
     }
 
