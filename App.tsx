@@ -22,6 +22,7 @@ const App: React.FC = () => {
     const [isAddTaskModalOpen, setIsAddTaskModalOpen] = useState(false);
     const [mascotMessage, setMascotMessage] = useState<string | null>(null);
     const [isTourActive, setIsTourActive] = useState(false);
+    const [isCaregiverMode, setIsCaregiverMode] = useState(false);
     
     useEffect(() => {
         if (currentUserProfile && !hasSeenTour) {
@@ -171,6 +172,7 @@ const App: React.FC = () => {
         setIsAuthenticated(false);
         setHasSeenTour(false);
         setIsRegistering(false);
+        setIsCaregiverMode(false);
     };
 
     if (!isAuthenticated && !isRegistering) {
@@ -187,20 +189,32 @@ const App: React.FC = () => {
                 <header className="p-4 md:p-6 flex justify-between items-center text-white">
                     <div className="flex flex-col">
                         <span className="text-sm text-white/60">
-                           Bem-vindo(a) de volta,
+                           {isCaregiverMode ? 'Monitorando:' : 'Bem-vindo(a) de volta,'}
                         </span>
                         <h1 className="text-2xl font-bold">
-                            {currentUserProfile.name}
+                            {isCaregiverMode ? `Painel de ${currentUserProfile.name}` : currentUserProfile.name}
                         </h1>
                     </div>
-                    <button 
-                        onClick={handleLogout}
-                        className="flex items-center gap-2 p-2 px-3 rounded-lg text-white/70 bg-slate-500/10 hover:bg-rose-500/20 hover:text-rose-300 transition-colors"
-                        aria-label="Sair"
-                    >
-                        {ICONS.logout}
-                        <span className="hidden sm:inline text-sm font-medium">Sair</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                         {currentUserProfile.characterPower === 'patient' && (
+                            <button 
+                                onClick={() => setIsCaregiverMode(!isCaregiverMode)}
+                                className={`flex items-center gap-2 p-2 px-3 rounded-lg text-white/70 transition-colors ${isCaregiverMode ? 'bg-violet-500/30 text-violet-300' : 'bg-slate-500/10 hover:bg-violet-500/20 hover:text-violet-300'}`}
+                                aria-label="Alternar Modo Cuidador"
+                            >
+                                {ICONS.caregiver}
+                                <span className="hidden sm:inline text-sm font-medium">{isCaregiverMode ? 'Sair do Modo' : 'Modo Cuidador'}</span>
+                            </button>
+                         )}
+                        <button 
+                            onClick={handleLogout}
+                            className="flex items-center gap-2 p-2 px-3 rounded-lg text-white/70 bg-slate-500/10 hover:bg-rose-500/20 hover:text-rose-300 transition-colors"
+                            aria-label="Sair"
+                        >
+                            {ICONS.logout}
+                            <span className="hidden sm:inline text-sm font-medium">Sair</span>
+                        </button>
+                    </div>
                 </header>
 
                 {activeView === 'dashboard' && (
@@ -209,13 +223,13 @@ const App: React.FC = () => {
                         onLogTask={handleLogTask} 
                         onAcceptMission={handleAcceptMission}
                         setMascotMessage={setMascotMessage}
-                        isCaregiverMode={false} // Caregiver mode removed in SPA version
+                        isCaregiverMode={isCaregiverMode}
                     />
                 )}
                 {activeView === 'profile' && <ProfilePage user={currentUserProfile} />}
             </main>
             
-            <Mascot user={currentUserProfile} systemMessage={mascotMessage} />
+            {!isCaregiverMode && <Mascot user={currentUserProfile} systemMessage={mascotMessage} />}
 
             <Navigation
                 activeView={activeView}
