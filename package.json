@@ -1,23 +1,11 @@
 {
-  "name": "neurosync-ai",
+  "name": "neurosync-ai-vercel",
+  "version": "1.0.0",
   "private": true,
-  "version": "0.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  },
-  "dependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0",
-    "@google/genai": "^1.15.0",
-    "recharts": "^3.1.2"
+    "build": "esbuild index.tsx --bundle --outfile=index.js --format=esm --jsx=automatic --loader:.ts=tsx --external:react --external:react-dom/* --external:react/* --external:@google/genai --external:recharts"
   },
   "devDependencies": {
-    "@types/node": "^22.14.0",
-    "@vitejs/plugin-react": "^5.0.0",
-    "typescript": "~5.8.2",
-    "vite": "^6.2.0"
+    "esbuild": "^0.20.2"
   }
 }
