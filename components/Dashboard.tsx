@@ -17,29 +17,41 @@ interface DashboardProps {
 const getScheduleForToday = (task: Task): Date[] => {
     const schedule: Date[] = [];
     const [startHour, startMinute] = task.startTime.split(':').map(Number);
-    const now = new Date();
+    const now = new Date(); // Use current date for context
+
     if (task.frequencyHours < 24) {
       for (let h = 0; h < 24; h += task.frequencyHours) {
+        // Create a date for today at the specified start time (in local timezone)
         const scheduledDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMinute);
+        // Add the frequency hours
         scheduledDate.setHours(scheduledDate.getHours() + h);
+        // Only add it if it's still for the same day (local time)
         if (scheduledDate.getDate() === now.getDate()) {
             schedule.push(scheduledDate);
         }
       }
     } else {
+        // For frequencies of 24h or more, use UTC for consistent day calculations
         const dayFrequency = task.frequencyHours / 24;
-        const today = new Date();
-        today.setHours(0,0,0,0);
-        const startDate = new Date('2024-01-01T00:00:00');
-        const diffTime = Math.abs(today.getTime() - startDate.getTime());
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-        
-        if (diffDays % dayFrequency === 0) {
+
+        // Get the start of the current day in UTC
+        const startOfTodayUTC = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
+
+        // Use a fixed epoch start date in UTC for consistent reference
+        const epochStartUTC = Date.UTC(2024, 0, 1); // January 1, 2024
+
+        // Calculate the difference in days since the epoch, in a timezone-agnostic way
+        const diffMilliseconds = startOfTodayUTC - epochStartUTC;
+        const diffDays = Math.floor(diffMilliseconds / (1000 * 60 * 60 * 24));
+
+        // Check if today is a scheduled day based on the frequency
+        if (diffDays >= 0 && diffDays % dayFrequency === 0) {
+            // If so, create the scheduled date for today in the user's local timezone
             const scheduledDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), startHour, startMinute);
             schedule.push(scheduledDate);
         }
     }
-    return schedule.sort((a,b) => a.getTime() - b.getTime());
+    return schedule.sort((a, b) => a.getTime() - b.getTime());
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ user, onLogTask, onAcceptMission, setMascotMessage, isCaregiverMode }) => {
